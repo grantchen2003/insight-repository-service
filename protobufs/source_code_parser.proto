@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package protobufs;
+
+option go_package = "/protobufs";
+
+service SourceCodeParser {
+    rpc SyntaxParse(stream SyntaxParseRequest) returns (stream SyntaxParseResponse);
+}
+
+message SyntaxParseRequest {
+    string user_id = 1;
+    string file_path = 2;
+}
+
+message SyntaxParseResponse {
+    bool success = 1;
+}
+
+//  protoc --go_out=. --go-grpc_out=. protobufs/source_code_parser.proto
