@@ -1,13 +1,9 @@
 package initializeRepository
 
 import (
-	"context"
 	"insight-repository-service/database"
-	pb "insight-repository-service/protobufs"
 	"log"
 	"os"
-
-	"google.golang.org/grpc"
 )
 
 type RepoInitBatch struct {
@@ -29,14 +25,15 @@ type FileChunk struct {
 	NumTotalChunks    int
 }
 
-func (batch RepoInitBatch) SaveRaw() ([]string, error) {
+func (batch RepoInitBatch) SaveFileChunksAsBase64() error {
 	var fileChunks []interface{}
 
 	for filePath, fileData := range batch.Files {
-		log.Printf(filePath)
 		fileChunk := FileChunk{
-			UserId:            batch.SessionId,
-			FilePath:          filePath,
+			UserId:   batch.SessionId,
+			FilePath: filePath,
+			// content is stored as base64 random string,
+			// this base64 string can be decoded to give us a utf8 string
 			Content:           fileData.Content,
 			ContentChunkIndex: fileData.ChunkIndex,
 			NumTotalChunks:    fileData.NumTotalChunks,
@@ -46,60 +43,61 @@ func (batch RepoInitBatch) SaveRaw() ([]string, error) {
 
 	db := database.GetInstance()
 
-	err := db.BatchSave(os.Getenv("FILE_CHUNKS_DB"), "file_chunks", fileChunks)
-
-	savedFilePaths := []string{}
-
-	if err != nil {
-		batch.ReportSaveRawFailure(err)
-	} else {
-		savedFilePaths, err = batch.ReportSaveRawSuccess()
-	}
-
-	return savedFilePaths, err
+	return db.BatchSave(os.Getenv("FILE_CHUNKS_DB"), "file_chunks", fileChunks)
 }
 
-func (batch RepoInitBatch) ReportSaveRawFailure(err error) error {
-	// grpc call to server
-	return nil
+func (batch RepoInitBatch) ReportSavedFileChunks() ([]string, error) {
+	var filePathsToProcess []string
+
+	for filePath, fileData := range batch.Files {
+		// FILL ME IN
+		// send the below data to the grpc server
+		// make concurrent (bidirectional streaming?)
+		log.Println(batch.SessionId, filePath, fileData.ChunkIndex, fileData.NumTotalChunks)
+		isLastReportedChunkForFile := true
+		if isLastReportedChunkForFile {
+			filePathsToProcess = append(filePathsToProcess, filePath)
+		}
+	}
+	return filePathsToProcess, nil
 }
 
 // make this concurrent
-func (batch RepoInitBatch) ReportSaveRawSuccess() ([]string, error) {
-	fullySavedFilePaths := []string{}
+// func (batch RepoInitBatch) ReportSaveRawSuccess() ([]string, error) {
+// 	fullySavedFilePaths := []string{}
 
-	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("failed to dial: %v", err)
-	}
-	defer conn.Close()
-	client := pb.NewRepositoryLockClient(conn)
+// 	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+// 	if err != nil {
+// 		log.Fatalf("failed to dial: %v", err)
+// 	}
+// 	defer conn.Close()
+// 	client := pb.NewRepositoryLockClient(conn)
 
-	stream, err := client.HandleSaveRawSuccess(context.Background())
-	if err != nil {
-		return fullySavedFilePaths, err
-	}
+// 	stream, err := client.HandleSaveRawSuccess(context.Background())
+// 	if err != nil {
+// 		return fullySavedFilePaths, err
+// 	}
 
-	for filePath, fileData := range batch.Files {
-		err := stream.Send(&pb.ReportSaveRawSuccessRequest{
-			UserId:            batch.SessionId,
-			FilePath:          filePath,
-			ContentChunkIndex: int32(fileData.ChunkIndex),
-			NumTotalChunks:    int32(fileData.NumTotalChunks),
-		})
+// 	for filePath, fileData := range batch.Files {
+// 		err := stream.Send(&pb.ReportSaveRawSuccessRequest{
+// 			UserId:            batch.SessionId,
+// 			FilePath:          filePath,
+// 			ContentChunkIndex: int32(fileData.ChunkIndex),
+// 			NumTotalChunks:    int32(fileData.NumTotalChunks),
+// 		})
 
-		if err != nil {
-			return fullySavedFilePaths, err
-		}
+// 		if err != nil {
+// 			return fullySavedFilePaths, err
+// 		}
 
-		res, err := stream.Recv()
-		if err != nil {
-			return fullySavedFilePaths, err
-		}
+// 		res, err := stream.Recv()
+// 		if err != nil {
+// 			return fullySavedFilePaths, err
+// 		}
 
-		if res.AllChunksSaved {
-			fullySavedFilePaths = append(fullySavedFilePaths, res.FilePath)
-		}
-	}
-	return fullySavedFilePaths, nil
-}
+// 		if res.AllChunksSaved {
+// 			fullySavedFilePaths = append(fullySavedFilePaths, res.FilePath)
+// 		}
+// 	}
+// 	return fullySavedFilePaths, nil
+// }

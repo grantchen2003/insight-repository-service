@@ -1,6 +1,7 @@
 package initializeRepository
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -21,39 +22,36 @@ func unpackRequest(c *gin.Context) (RepoInitBatch, error) {
 	return batch, err
 }
 
-func semanticallySummarizeFiles(repoId string, filePaths []string) {
-}
-
-func vectorEmbedFiles(repoId string, filePaths []string) {
-}
-
 func InitializeRepository(c *gin.Context) {
+	// unpack the request
+	batch, err := unpackRequest(c)
+	if err != nil {
+		// handle case where request couldn't be unpacked
+		return
+	}
+
+	err = batch.SaveFileChunksAsBase64()
+	if err != nil {
+		// handle case where one/many/all chunks didn't save
+		return
+	}
+
+	filePathsToProcess, err := batch.ReportSavedFileChunks()
+	if err != nil {
+		// handle case where grpc report to lock doesn't work
+		return
+	}
+
+	// checkpoint
+	for _, filePath := range filePathsToProcess {
+		log.Println(filePath)
+	}
+
+	// syntax parse each file in filePathsToProcess
+	// semantically summarize each file in filePathsToProcess
+	// vector embed each file in filePathsToProcess
+
 	c.JSON(http.StatusOK, map[string]string{
 		"repository_id": "123",
 	})
-
-	batch, err := unpackRequest(c)
-	if err != nil {
-		return
-	}
-
-	_, err = batch.SaveRaw()
-	if err != nil {
-		return
-	}
-
-	// SyntaxParseFiles(batch.SessionId, savedFilePaths)
-	// if err != nil {
-	// 	return
-	// }
-
-	// semanticallySummarizeFiles(batch.SessionId, savedFilePaths)
-	// if err != nil {
-	// 	return
-	// }
-
-	// vectorEmbedFiles(batch.SessionId, savedFilePaths)
-	// if err != nil {
-	// 	return
-	// }
 }
