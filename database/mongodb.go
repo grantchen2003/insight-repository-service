@@ -41,20 +41,8 @@ func (mongodb *MongoDB) Close() error {
 	if err != nil {
 		return err
 	}
+
 	fmt.Println("Connection closed.")
-	return err
-}
-
-func (mongodb *MongoDB) Save(databaseName string, collectionName string, document interface{}) error {
-	collection := mongodb.client.Database(databaseName).Collection(collectionName)
-
-	insertResult, err := collection.InsertOne(context.TODO(), document)
-
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("Inserted document with ID:", insertResult.InsertedID)
 
 	return err
 }
@@ -62,15 +50,7 @@ func (mongodb *MongoDB) Save(databaseName string, collectionName string, documen
 func (mongodb *MongoDB) BatchSave(databaseName string, collectionName string, documentBatch []interface{}) error {
 	collection := mongodb.client.Database(databaseName).Collection(collectionName)
 
-	insertResults, err := collection.InsertMany(context.Background(), documentBatch)
-
-	if err != nil {
-		return err
-	}
-
-	for _, id := range insertResults.InsertedIDs {
-		fmt.Println("Inserted document with ID:", id)
-	}
+	_, err := collection.InsertMany(context.Background(), documentBatch)
 
 	return err
 }
