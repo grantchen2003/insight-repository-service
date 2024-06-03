@@ -3,6 +3,7 @@ package initializeRepository
 import (
 	"context"
 	"insight-repository-service/protobufs"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -34,30 +35,25 @@ func getFileStructure(userId string, filePaths []string) error {
 	defer conn.Close()
 
 	client := protobufs.NewFileStructureServiceClient(conn)
-	stream, err := client.ExtractStructure(context.Background())
+	request := &protobufs.Files{UserId: userId, FilePaths: filePaths}
+
+	stream, err := client.ExtractStructure(context.Background(), request)
+
 	if err != nil {
-		log.Fatalf("error creating stream to file structure service: %v", err)
+		log.Fatalf("error calling file structure service: %v", err)
 	}
 
-	for _, filePath := range filePaths {
-		err := stream.Send(&protobufs.File{
-			UserId:   userId,
-			FilePath: filePath,
-		})
-
-		if err != nil {
-			log.Fatalf("error sending request: %v", err)
+	for {
+		response, err := stream.Recv()
+		if err == io.EOF {
+			break
 		}
 
-		_, err = stream.Recv()
 		if err != nil {
-			log.Fatalf("error receiving response: %v", err)
-
+			log.Fatalf("error receiving response from file structure service: %v", err)
 		}
-	}
 
-	if err = stream.CloseSend(); err != nil {
-		log.Fatalf("error closing stream: %v", err)
+		log.Printf(response.FilePath)
 	}
 
 	return err
