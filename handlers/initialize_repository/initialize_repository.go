@@ -27,20 +27,20 @@ func unpackRequest(c *gin.Context) (RepoInitBatch, error) {
 	return batch, err
 }
 
-func getFileStructure(userId string, filePaths []string) error {
-	conn, err := grpc.Dial(os.Getenv("FILE_STRUCTURE_SERVICE_ADDRESS"), grpc.WithInsecure())
+func getFileSegments(userId string, filePaths []string) error {
+	conn, err := grpc.Dial(os.Getenv("FILE_SEGMENT_SERVICE_ADDRESS"), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
 
-	client := protobufs.NewFileStructureServiceClient(conn)
+	client := protobufs.NewFileSegmentServiceClient(conn)
 	request := &protobufs.Files{UserId: userId, FilePaths: filePaths}
 
 	stream, err := client.ExtractStructure(context.Background(), request)
 
 	if err != nil {
-		log.Fatalf("error calling file structure service: %v", err)
+		log.Fatalf("error calling file segment service: %v", err)
 	}
 
 	for {
@@ -50,10 +50,10 @@ func getFileStructure(userId string, filePaths []string) error {
 		}
 
 		if err != nil {
-			log.Fatalf("error receiving response from file structure service: %v", err)
+			log.Fatalf("error receiving response from file segment service: %v", err)
 		}
 
-		log.Printf(response.FilePath)
+		log.Printf(response.FilePath, response.StartLine, response.EndLine)
 	}
 
 	return err
@@ -74,13 +74,13 @@ func InitializeRepository(c *gin.Context) {
 		return
 	}
 
-	filePathsToProcess, err := batch.ReportSavedFileChunks()
+	filePathsToProcess, err := batch.SyncFileChunks()
 	if err != nil {
 		// handle case where grpc report to lock doesn't work
 		return
 	}
 
-	getFileStructure(batch.SessionId, filePathsToProcess)
+	getFileSegments(batch.SessionId, filePathsToProcess)
 
 	// syntax parse each file in filePathsToProcess
 	// semantically summarize each file in filePathsToProcess

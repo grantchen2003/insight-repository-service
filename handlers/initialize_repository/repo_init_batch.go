@@ -49,46 +49,40 @@ func (batch RepoInitBatch) SaveFileChunksAsBase64() error {
 	return db.BatchSave(os.Getenv("FILE_CHUNKS_DB"), "file_chunks", fileChunks)
 }
 
-func (batch RepoInitBatch) ReportSavedFileChunks() ([]string, error) {
-	var filePathsToProcess []string
-
+func (batch RepoInitBatch) SyncFileChunks() ([]string, error) {
 	conn, err := grpc.Dial(os.Getenv("REPOSITORY_SYNC_SERVICE_ADDRESS"), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
 
-	client := protobufs.NewRepositorySyncServiceClient(conn)
-	stream, err := client.ReportSavedFileChunk(context.Background())
-	if err != nil {
-		log.Fatalf("error creating stream: %v", err)
-	}
+	var fileChunks []*protobufs.FileChunk
 
 	for filePath, fileData := range batch.Files {
-		err := stream.Send(&protobufs.ReportSavedFileChunkRequest{
-			UserId:         batch.SessionId,
+		fileChunks = append(fileChunks, &protobufs.FileChunk{
 			FilePath:       filePath,
 			ChunkIndex:     int32(fileData.ChunkIndex),
 			NumTotalChunks: int32(fileData.NumTotalChunks),
 		})
-
-		if err != nil {
-			log.Fatalf("error sending request: %v", err)
-		}
-
-		resp, err := stream.Recv()
-		if err != nil {
-			log.Fatalf("error receiving response: %v", err)
-
-		}
-
-		if resp.IsLastChunk {
-			filePathsToProcess = append(filePathsToProcess, filePath)
-		}
 	}
 
-	if err = stream.CloseSend(); err != nil {
-		log.Fatalf("error closing stream: %v", err)
+	client := protobufs.NewRepositorySyncServiceClient(conn)
+	fileChunkStatuses, err := client.SyncFileChunks(context.Background(), &protobufs.FileChunks{
+		UserId:     batch.SessionId,
+		FileChunks: fileChunks,
+	})
+
+	if err != nil {
+		log.Fatalf("Failed to syn file chunks: %v", err)
+	}
+
+	var filePathsToProcess []string
+
+	for _, fileChunkStatus := range fileChunkStatuses.FileChunkStatus {
+		log.Println(fileChunkStatus.FilePath, fileChunkStatus.IsLastChunk)
+		if fileChunkStatus.IsLastChunk {
+			filePathsToProcess = append(filePathsToProcess, fileChunkStatus.FilePath)
+		}
 	}
 
 	return filePathsToProcess, nil

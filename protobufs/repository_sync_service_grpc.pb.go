@@ -19,14 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	RepositorySyncService_ReportSavedFileChunk_FullMethodName = "/RepositorySyncService/ReportSavedFileChunk"
+	RepositorySyncService_SyncFileChunks_FullMethodName = "/RepositorySyncService/SyncFileChunks"
 )
 
 // RepositorySyncServiceClient is the client API for RepositorySyncService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RepositorySyncServiceClient interface {
-	ReportSavedFileChunk(ctx context.Context, opts ...grpc.CallOption) (RepositorySyncService_ReportSavedFileChunkClient, error)
+	SyncFileChunks(ctx context.Context, in *FileChunks, opts ...grpc.CallOption) (*FileChunkStatuses, error)
 }
 
 type repositorySyncServiceClient struct {
@@ -37,42 +37,20 @@ func NewRepositorySyncServiceClient(cc grpc.ClientConnInterface) RepositorySyncS
 	return &repositorySyncServiceClient{cc}
 }
 
-func (c *repositorySyncServiceClient) ReportSavedFileChunk(ctx context.Context, opts ...grpc.CallOption) (RepositorySyncService_ReportSavedFileChunkClient, error) {
-	stream, err := c.cc.NewStream(ctx, &RepositorySyncService_ServiceDesc.Streams[0], RepositorySyncService_ReportSavedFileChunk_FullMethodName, opts...)
+func (c *repositorySyncServiceClient) SyncFileChunks(ctx context.Context, in *FileChunks, opts ...grpc.CallOption) (*FileChunkStatuses, error) {
+	out := new(FileChunkStatuses)
+	err := c.cc.Invoke(ctx, RepositorySyncService_SyncFileChunks_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &repositorySyncServiceReportSavedFileChunkClient{stream}
-	return x, nil
-}
-
-type RepositorySyncService_ReportSavedFileChunkClient interface {
-	Send(*ReportSavedFileChunkRequest) error
-	Recv() (*ReportSavedFileChunkResponse, error)
-	grpc.ClientStream
-}
-
-type repositorySyncServiceReportSavedFileChunkClient struct {
-	grpc.ClientStream
-}
-
-func (x *repositorySyncServiceReportSavedFileChunkClient) Send(m *ReportSavedFileChunkRequest) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *repositorySyncServiceReportSavedFileChunkClient) Recv() (*ReportSavedFileChunkResponse, error) {
-	m := new(ReportSavedFileChunkResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
+	return out, nil
 }
 
 // RepositorySyncServiceServer is the server API for RepositorySyncService service.
 // All implementations must embed UnimplementedRepositorySyncServiceServer
 // for forward compatibility
 type RepositorySyncServiceServer interface {
-	ReportSavedFileChunk(RepositorySyncService_ReportSavedFileChunkServer) error
+	SyncFileChunks(context.Context, *FileChunks) (*FileChunkStatuses, error)
 	mustEmbedUnimplementedRepositorySyncServiceServer()
 }
 
@@ -80,8 +58,8 @@ type RepositorySyncServiceServer interface {
 type UnimplementedRepositorySyncServiceServer struct {
 }
 
-func (UnimplementedRepositorySyncServiceServer) ReportSavedFileChunk(RepositorySyncService_ReportSavedFileChunkServer) error {
-	return status.Errorf(codes.Unimplemented, "method ReportSavedFileChunk not implemented")
+func (UnimplementedRepositorySyncServiceServer) SyncFileChunks(context.Context, *FileChunks) (*FileChunkStatuses, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SyncFileChunks not implemented")
 }
 func (UnimplementedRepositorySyncServiceServer) mustEmbedUnimplementedRepositorySyncServiceServer() {}
 
@@ -96,30 +74,22 @@ func RegisterRepositorySyncServiceServer(s grpc.ServiceRegistrar, srv Repository
 	s.RegisterService(&RepositorySyncService_ServiceDesc, srv)
 }
 
-func _RepositorySyncService_ReportSavedFileChunk_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(RepositorySyncServiceServer).ReportSavedFileChunk(&repositorySyncServiceReportSavedFileChunkServer{stream})
-}
-
-type RepositorySyncService_ReportSavedFileChunkServer interface {
-	Send(*ReportSavedFileChunkResponse) error
-	Recv() (*ReportSavedFileChunkRequest, error)
-	grpc.ServerStream
-}
-
-type repositorySyncServiceReportSavedFileChunkServer struct {
-	grpc.ServerStream
-}
-
-func (x *repositorySyncServiceReportSavedFileChunkServer) Send(m *ReportSavedFileChunkResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *repositorySyncServiceReportSavedFileChunkServer) Recv() (*ReportSavedFileChunkRequest, error) {
-	m := new(ReportSavedFileChunkRequest)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+func _RepositorySyncService_SyncFileChunks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FileChunks)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return m, nil
+	if interceptor == nil {
+		return srv.(RepositorySyncServiceServer).SyncFileChunks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RepositorySyncService_SyncFileChunks_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RepositorySyncServiceServer).SyncFileChunks(ctx, req.(*FileChunks))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 // RepositorySyncService_ServiceDesc is the grpc.ServiceDesc for RepositorySyncService service.
@@ -128,14 +98,12 @@ func (x *repositorySyncServiceReportSavedFileChunkServer) Recv() (*ReportSavedFi
 var RepositorySyncService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "RepositorySyncService",
 	HandlerType: (*RepositorySyncServiceServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams: []grpc.StreamDesc{
+	Methods: []grpc.MethodDesc{
 		{
-			StreamName:    "ReportSavedFileChunk",
-			Handler:       _RepositorySyncService_ReportSavedFileChunk_Handler,
-			ServerStreams: true,
-			ClientStreams: true,
+			MethodName: "SyncFileChunks",
+			Handler:    _RepositorySyncService_SyncFileChunks_Handler,
 		},
 	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "repository_sync_service.proto",
 }
