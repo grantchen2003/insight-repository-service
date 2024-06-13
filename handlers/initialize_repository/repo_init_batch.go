@@ -1,13 +1,10 @@
 package initializeRepository
 
 import (
-	"context"
 	"insight-repository-service/database"
-	"insight-repository-service/protobufs"
+	repositorySyncService "insight-repository-service/services/repository_sync_service"
 	"log"
 	"os"
-
-	"google.golang.org/grpc"
 )
 
 type RepoInitBatch struct {
@@ -50,35 +47,26 @@ func (batch RepoInitBatch) SaveFileChunksAsBase64() error {
 }
 
 func (batch RepoInitBatch) SyncFileChunks() ([]string, error) {
-	conn, err := grpc.Dial(os.Getenv("REPOSITORY_SYNC_SERVICE_ADDRESS"), grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("did not connect: %v", err)
-	}
-	defer conn.Close()
 
-	var fileChunks []*protobufs.FileChunk
+	var fileChunks []repositorySyncService.FileChunk
 
 	for filePath, fileData := range batch.Files {
-		fileChunks = append(fileChunks, &protobufs.FileChunk{
+		fileChunks = append(fileChunks, repositorySyncService.FileChunk{
 			FilePath:       filePath,
-			ChunkIndex:     int32(fileData.ChunkIndex),
-			NumTotalChunks: int32(fileData.NumTotalChunks),
+			ChunkIndex:     fileData.ChunkIndex,
+			NumTotalChunks: fileData.NumTotalChunks,
 		})
 	}
 
-	client := protobufs.NewRepositorySyncServiceClient(conn)
-	fileChunkStatuses, err := client.SyncFileChunks(context.Background(), &protobufs.FileChunks{
-		UserId:     batch.SessionId,
-		FileChunks: fileChunks,
-	})
+	fileChunkStatuses, err := repositorySyncService.SyncFileChunks(batch.SessionId, fileChunks)
 
 	if err != nil {
-		log.Fatalf("Failed to syn file chunks: %v", err)
+		log.Fatal(err)
 	}
 
 	var filePathsToProcess []string
 
-	for _, fileChunkStatus := range fileChunkStatuses.FileChunkStatus {
+	for _, fileChunkStatus := range fileChunkStatuses {
 		log.Println(fileChunkStatus.FilePath, fileChunkStatus.IsLastChunk)
 		if fileChunkStatus.IsLastChunk {
 			filePathsToProcess = append(filePathsToProcess, fileChunkStatus.FilePath)
