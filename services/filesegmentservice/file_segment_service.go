@@ -1,8 +1,8 @@
-package fileSegmentService
+package filesegmentservice
 
 import (
 	"context"
-	"insight-repository-service/protobufs"
+	"insight-repository-service/services/filesegmentservice/pb"
 	"io"
 	"log"
 	"os"
@@ -26,8 +26,8 @@ func GetFileSegments(userId string, filePaths []string) ([]FileSegment, error) {
 	}
 	defer conn.Close()
 
-	client := protobufs.NewFileSegmentServiceClient(conn)
-	request := &protobufs.Files{UserId: userId, FilePaths: filePaths}
+	client := pb.NewFileSegmentServiceClient(conn)
+	request := &pb.Files{UserId: userId, FilePaths: filePaths}
 
 	stream, err := client.ExtractStructure(context.Background(), request)
 

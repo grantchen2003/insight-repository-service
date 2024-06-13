@@ -4,7 +4,7 @@
 // - protoc             v4.23.3
 // source: repository_sync_service.proto
 
-package protobufs
+package pb
 
 import (
 	context "context"

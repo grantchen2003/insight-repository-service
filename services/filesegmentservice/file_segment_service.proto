@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "/protobufs";
+option go_package = "/filesegmentservice/pb";
 
 message Files {
     string user_id = 1;

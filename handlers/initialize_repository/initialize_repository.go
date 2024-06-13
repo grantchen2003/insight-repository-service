@@ -1,7 +1,7 @@
 package initializeRepository
 
 import (
-	fileSegmentService "insight-repository-service/services/file_segment_service"
+	fileSegmentService "insight-repository-service/services/filesegmentservice"
 	"log"
 	"net/http"
 

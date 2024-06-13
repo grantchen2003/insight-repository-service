@@ -4,7 +4,7 @@
 // - protoc             v4.23.3
 // source: file_segment_service.proto
 
-package protobufs
+package pb
 
 import (
 	context "context"

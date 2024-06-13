@@ -1,8 +1,8 @@
-package repositorySyncService
+package repositorysyncservice
 
 import (
 	"context"
-	"insight-repository-service/protobufs"
+	"insight-repository-service/services/repositorysyncservice/pb"
 	"log"
 	"os"
 
@@ -27,18 +27,18 @@ func SyncFileChunks(userId string, fileChunks []FileChunk) ([]FileChunkStatus, e
 	}
 	defer conn.Close()
 
-	var pbFileChunks []*protobufs.FileChunk
+	var pbFileChunks []*pb.FileChunk
 
 	for _, fileChunk := range fileChunks {
-		pbFileChunks = append(pbFileChunks, &protobufs.FileChunk{
+		pbFileChunks = append(pbFileChunks, &pb.FileChunk{
 			FilePath:       fileChunk.FilePath,
 			ChunkIndex:     int32(fileChunk.ChunkIndex),
 			NumTotalChunks: int32(fileChunk.NumTotalChunks),
 		})
 	}
 
-	client := protobufs.NewRepositorySyncServiceClient(conn)
-	pbFileChunkStatuses, err := client.SyncFileChunks(context.Background(), &protobufs.FileChunks{
+	client := pb.NewRepositorySyncServiceClient(conn)
+	pbFileChunkStatuses, err := client.SyncFileChunks(context.Background(), &pb.FileChunks{
 		UserId:     userId,
 		FileChunks: pbFileChunks,
 	})

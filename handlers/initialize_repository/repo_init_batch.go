@@ -2,7 +2,7 @@ package initializeRepository
 
 import (
 	"insight-repository-service/database"
-	repositorySyncService "insight-repository-service/services/repository_sync_service"
+	repositorySyncService "insight-repository-service/services/repositorysyncservice"
 	"log"
 	"os"
 )
