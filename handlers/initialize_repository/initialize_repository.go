@@ -1,15 +1,11 @@
 package initializeRepository
 
 import (
-	"context"
-	"insight-repository-service/protobufs"
-	"io"
+	fileSegmentService "insight-repository-service/services/file_segment_service"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
-	"google.golang.org/grpc"
 )
 
 func unpackRequest(c *gin.Context) (RepoInitBatch, error) {
@@ -25,39 +21,6 @@ func unpackRequest(c *gin.Context) (RepoInitBatch, error) {
 
 	batch.SessionId = sessionId
 	return batch, err
-}
-
-func getFileSegments(userId string, filePaths []string) error {
-	conn, err := grpc.Dial(os.Getenv("FILE_SEGMENT_SERVICE_ADDRESS"), grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("did not connect: %v", err)
-	}
-	defer conn.Close()
-
-	client := protobufs.NewFileSegmentServiceClient(conn)
-	request := &protobufs.Files{UserId: userId, FilePaths: filePaths}
-
-	stream, err := client.ExtractStructure(context.Background(), request)
-
-	if err != nil {
-		log.Fatalf("error calling file segment service: %v", err)
-	}
-
-	for {
-		response, err := stream.Recv()
-		if err == io.EOF {
-			break
-		}
-
-		if err != nil {
-			log.Fatalf("error receiving response from file segment service: %v", err)
-		}
-
-		log.Printf(response.FilePath, response.StartLine, response.EndLine)
-	}
-
-	return err
-
 }
 
 func InitializeRepository(c *gin.Context) {
@@ -80,9 +43,15 @@ func InitializeRepository(c *gin.Context) {
 		return
 	}
 
-	getFileSegments(batch.SessionId, filePathsToProcess)
+	fileSegments, err := fileSegmentService.GetFileSegments(batch.SessionId, filePathsToProcess)
+	if err != nil {
+		return
+	}
 
-	// syntax parse each file in filePathsToProcess
+	for _, fileSegment := range fileSegments {
+		log.Println(fileSegment)
+	}
+
 	// semantically summarize each file in filePathsToProcess
 	// vector embed each file in filePathsToProcess
 
