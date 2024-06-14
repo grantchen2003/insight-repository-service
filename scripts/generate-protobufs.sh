@@ -1,4 +1,4 @@
-cd ../services
+cd ../internal/services
 
 for dir in */ ; do
     # Check if the item is a directory

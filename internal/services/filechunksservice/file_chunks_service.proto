@@ -13,7 +13,7 @@ message FileChunk {
 }
 
 
-message FileChunks {
+message SaveFileChunksRequest {
     repeated FileChunk file_chunks = 1;
 }
 
@@ -30,5 +30,5 @@ message SaveFileChunksResponse {
 
 
 service FileChunksService {
-    rpc SaveFileChunks(FileChunks) returns (SaveFileChunksResponse);
+    rpc SaveFileChunks(SaveFileChunksRequest) returns (SaveFileChunksResponse);
 }

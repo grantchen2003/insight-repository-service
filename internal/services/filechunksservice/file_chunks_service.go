@@ -42,7 +42,7 @@ func SaveFileChunks(userId string, fileChunks []FileChunk) ([]FileChunkStatus, e
 	}
 
 	client := pb.NewFileChunksServiceClient(conn)
-	response, err := client.SaveFileChunks(context.Background(), &pb.FileChunks{
+	response, err := client.SaveFileChunks(context.Background(), &pb.SaveFileChunksRequest{
 		FileChunks: pbFileChunks,
 	})
 
