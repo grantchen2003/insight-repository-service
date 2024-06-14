@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"insight-repository-service/config"
-	"insight-repository-service/database"
-	"insight-repository-service/handlers"
-	initializeRepository "insight-repository-service/handlers/initialize_repository"
 	"log"
 	"os"
+
+	"github.com/grantchen2003/insight/repository/internal/config"
+	"github.com/grantchen2003/insight/repository/internal/database"
+	"github.com/grantchen2003/insight/repository/internal/handlers"
+	initializeRepository "github.com/grantchen2003/insight/repository/internal/handlers/initialize_repository"
 
 	"github.com/gin-gonic/gin"
 )

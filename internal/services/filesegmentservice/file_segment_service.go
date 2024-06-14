@@ -2,10 +2,11 @@ package filesegmentservice
 
 import (
 	"context"
-	"insight-repository-service/services/filesegmentservice/pb"
 	"io"
 	"log"
 	"os"
+
+	"github.com/grantchen2003/insight/repository/internal/services/filesegmentservice/pb"
 
 	"google.golang.org/grpc"
 )

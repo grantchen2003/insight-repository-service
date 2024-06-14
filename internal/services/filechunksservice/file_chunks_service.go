@@ -2,25 +2,28 @@ package repositorysyncservice
 
 import (
 	"context"
-	"insight-repository-service/services/repositorysyncservice/pb"
 	"log"
 	"os"
+
+	"github.com/grantchen2003/insight/repository/internal/services/filechunksservice/pb"
 
 	"google.golang.org/grpc"
 )
 
 type FileChunk struct {
+	UserId         string
 	FilePath       string
+	Content        string
 	ChunkIndex     int
 	NumTotalChunks int
 }
 
 type FileChunkStatus struct {
-	FilePath    string
-	IsLastChunk bool
+	FilePath         string
+	IsLastSavedChunk bool
 }
 
-func SyncFileChunks(userId string, fileChunks []FileChunk) ([]FileChunkStatus, error) {
+func SaveFileChunks(userId string, fileChunks []FileChunk) ([]FileChunkStatus, error) {
 	conn, err := grpc.Dial(os.Getenv("REPOSITORY_SYNC_SERVICE_ADDRESS"), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
@@ -31,15 +34,15 @@ func SyncFileChunks(userId string, fileChunks []FileChunk) ([]FileChunkStatus, e
 
 	for _, fileChunk := range fileChunks {
 		pbFileChunks = append(pbFileChunks, &pb.FileChunk{
+			UserId:         userId,
 			FilePath:       fileChunk.FilePath,
 			ChunkIndex:     int32(fileChunk.ChunkIndex),
 			NumTotalChunks: int32(fileChunk.NumTotalChunks),
 		})
 	}
 
-	client := pb.NewRepositorySyncServiceClient(conn)
-	pbFileChunkStatuses, err := client.SyncFileChunks(context.Background(), &pb.FileChunks{
-		UserId:     userId,
+	client := pb.NewFileChunksServiceClient(conn)
+	response, err := client.SaveFileChunks(context.Background(), &pb.FileChunks{
 		FileChunks: pbFileChunks,
 	})
 
@@ -49,10 +52,10 @@ func SyncFileChunks(userId string, fileChunks []FileChunk) ([]FileChunkStatus, e
 
 	var fileChunkStatuses []FileChunkStatus
 
-	for _, pbFileChunkStatus := range pbFileChunkStatuses.FileChunkStatus {
+	for _, pbFileChunkStatus := range response.FileChunkStatuses {
 		fileChunkStatuses = append(fileChunkStatuses, FileChunkStatus{
-			FilePath:    pbFileChunkStatus.FilePath,
-			IsLastChunk: pbFileChunkStatus.IsLastChunk,
+			FilePath:         pbFileChunkStatus.FilePath,
+			IsLastSavedChunk: pbFileChunkStatus.IsLastSavedChunk,
 		})
 	}
 

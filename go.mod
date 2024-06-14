@@ -1,4 +1,4 @@
-module insight-repository-service
+module github.com/grantchen2003/insight/repository
 
 go 1.21.5
 

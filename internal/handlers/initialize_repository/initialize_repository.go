@@ -1,9 +1,10 @@
 package initializeRepository
 
 import (
-	fileSegmentService "insight-repository-service/services/filesegmentservice"
 	"log"
 	"net/http"
+
+	fileSegmentService "github.com/grantchen2003/insight/repository/internal/services/filesegmentservice"
 
 	"github.com/gin-gonic/gin"
 )
@@ -31,13 +32,7 @@ func InitializeRepository(c *gin.Context) {
 		return
 	}
 
-	err = batch.SaveFileChunksAsBase64()
-	if err != nil {
-		// handle case where one/many/all chunks didn't save
-		return
-	}
-
-	filePathsToProcess, err := batch.SyncFileChunks()
+	filePathsToProcess, err := batch.SaveFileChunks()
 	if err != nil {
 		// handle case where grpc report to lock doesn't work
 		return

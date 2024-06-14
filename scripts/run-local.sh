@@ -4,4 +4,4 @@ cd ..
 
 export ENV=dev
 
-nodemon --exec go run main.go
+nodemon --exec "go run cmd/repository/main.go" --watch . -e go

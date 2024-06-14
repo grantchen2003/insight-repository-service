@@ -13,10 +13,10 @@ func LoadEnvVars(env string) (bool, error) {
 	switch env {
 
 	case "dev", "development":
-		err = godotenv.Load("./config/.env.dev")
+		err = godotenv.Load(".env.dev")
 
 	case "prod", "production":
-		err = godotenv.Load("./config/.env.prod")
+		err = godotenv.Load(".env.prod")
 		envIsProduction = true
 
 	default:
