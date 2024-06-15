@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/grantchen2003/insight/repository/internal/config"
-	"github.com/grantchen2003/insight/repository/internal/database"
 	"github.com/grantchen2003/insight/repository/internal/handlers"
 	initializeRepository "github.com/grantchen2003/insight/repository/internal/handlers/initialize_repository"
 
@@ -22,10 +21,6 @@ func main() {
 		log.Fatal(err)
 		return
 	}
-
-	db := database.GetInstance()
-	db.Connect()
-	defer db.Close()
 
 	if envIsProduction {
 		gin.SetMode(gin.ReleaseMode)

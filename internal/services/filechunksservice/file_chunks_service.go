@@ -36,6 +36,7 @@ func SaveFileChunks(userId string, fileChunks []FileChunk) ([]FileChunkStatus, e
 		pbFileChunks = append(pbFileChunks, &pb.FileChunk{
 			UserId:         userId,
 			FilePath:       fileChunk.FilePath,
+			Content:        fileChunk.Content,
 			ChunkIndex:     int32(fileChunk.ChunkIndex),
 			NumTotalChunks: int32(fileChunk.NumTotalChunks),
 		})
