@@ -4,9 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	fileSegmentService "github.com/grantchen2003/insight/repository/internal/services/filesegmentservice"
-
 	"github.com/gin-gonic/gin"
+	filecomponentservice "github.com/grantchen2003/insight/repository/internal/services/filecomponentsservice"
 )
 
 func unpackRequest(c *gin.Context) (RepoInitBatch, error) {
@@ -38,13 +37,13 @@ func InitializeRepository(c *gin.Context) {
 		return
 	}
 
-	fileSegments, err := fileSegmentService.GetFileSegments(batch.SessionId, filePathsToProcess)
+	fileComponents, err := filecomponentservice.GetFilesComponents(batch.SessionId, filePathsToProcess)
 	if err != nil {
 		return
 	}
 
-	for _, fileSegment := range fileSegments {
-		log.Println(fileSegment)
+	for _, fileComponent := range fileComponents {
+		log.Println(fileComponent)
 	}
 
 	// semantically summarize each file in filePathsToProcess

@@ -13,7 +13,7 @@ import (
 type FileChunk struct {
 	UserId         string
 	FilePath       string
-	Content        string
+	Content        []byte
 	ChunkIndex     int
 	NumTotalChunks int
 }
@@ -30,10 +30,10 @@ func SaveFileChunks(userId string, fileChunks []FileChunk) ([]FileChunkStatus, e
 	}
 	defer conn.Close()
 
-	var pbFileChunks []*pb.FileChunk
+	var pbFileChunks []*pb.FileChunkPayload
 
 	for _, fileChunk := range fileChunks {
-		pbFileChunks = append(pbFileChunks, &pb.FileChunk{
+		pbFileChunks = append(pbFileChunks, &pb.FileChunkPayload{
 			UserId:         userId,
 			FilePath:       fileChunk.FilePath,
 			Content:        fileChunk.Content,
@@ -44,7 +44,7 @@ func SaveFileChunks(userId string, fileChunks []FileChunk) ([]FileChunkStatus, e
 
 	client := pb.NewFileChunksServiceClient(conn)
 	response, err := client.SaveFileChunks(context.Background(), &pb.SaveFileChunksRequest{
-		FileChunks: pbFileChunks,
+		FileChunkPayloads: pbFileChunks,
 	})
 
 	if err != nil {

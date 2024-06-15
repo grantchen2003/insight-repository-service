@@ -1,6 +1,7 @@
 package initializeRepository
 
 import (
+	"encoding/base64"
 	"log"
 
 	fileChunksService "github.com/grantchen2003/insight/repository/internal/services/filechunksservice"
@@ -22,10 +23,15 @@ func (batch RepoInitBatch) SaveFileChunks() ([]string, error) {
 	var fileChunks []fileChunksService.FileChunk
 
 	for filePath, fileData := range batch.Files {
+		fileContent, err := base64.StdEncoding.DecodeString(fileData.Content)
+		if err != nil {
+			return nil, err
+		}
+
 		fileChunks = append(fileChunks, fileChunksService.FileChunk{
 			UserId:         batch.SessionId,
 			FilePath:       filePath,
-			Content:        fileData.Content,
+			Content:        fileContent,
 			ChunkIndex:     fileData.ChunkIndex,
 			NumTotalChunks: fileData.NumTotalChunks,
 		})
