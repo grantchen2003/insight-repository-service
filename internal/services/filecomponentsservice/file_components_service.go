@@ -43,7 +43,7 @@ func GetFilesComponents(userId string, filePaths []string) ([]FileComponent, err
 		}
 
 		if err != nil {
-			log.Fatalf("error receiving response from file segment service: %v", err)
+			log.Fatalf("error receiving response from file component service: %v", err)
 			return nil, err
 		}
 
