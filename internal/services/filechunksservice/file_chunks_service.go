@@ -2,7 +2,6 @@ package repositorysyncservice
 
 import (
 	"context"
-	"log"
 	"os"
 
 	"github.com/grantchen2003/insight/repository/internal/services/filechunksservice/pb"
@@ -18,15 +17,15 @@ type FileChunk struct {
 	NumTotalChunks int
 }
 
-type FileChunkStatus struct {
+type FileChunkSaveStatus struct {
 	FilePath         string
 	IsLastSavedChunk bool
 }
 
-func SaveFileChunks(userId string, fileChunks []FileChunk) ([]FileChunkStatus, error) {
+func SaveFileChunks(userId string, fileChunks []FileChunk) ([]FileChunkSaveStatus, error) {
 	conn, err := grpc.Dial(os.Getenv("REPOSITORY_SYNC_SERVICE_ADDRESS"), grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		return nil, err
 	}
 	defer conn.Close()
 
@@ -48,18 +47,18 @@ func SaveFileChunks(userId string, fileChunks []FileChunk) ([]FileChunkStatus, e
 	})
 
 	if err != nil {
-		log.Fatalf("Failed to syn file chunks: %v", err)
+		return nil, err
 	}
 
-	var fileChunkStatuses []FileChunkStatus
+	var fileChunkSaveStatuses []FileChunkSaveStatus
 
 	for _, pbFileChunkStatus := range response.FileChunkStatuses {
-		fileChunkStatuses = append(fileChunkStatuses, FileChunkStatus{
+		fileChunkSaveStatuses = append(fileChunkSaveStatuses, FileChunkSaveStatus{
 			FilePath:         pbFileChunkStatus.FilePath,
 			IsLastSavedChunk: pbFileChunkStatus.IsLastSavedChunk,
 		})
 	}
 
-	return fileChunkStatuses, nil
+	return fileChunkSaveStatuses, nil
 
 }

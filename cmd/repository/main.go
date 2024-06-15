@@ -7,7 +7,7 @@ import (
 
 	"github.com/grantchen2003/insight/repository/internal/config"
 	"github.com/grantchen2003/insight/repository/internal/handlers"
-	initializeRepository "github.com/grantchen2003/insight/repository/internal/handlers/initialize_repository"
+	initializeRepository "github.com/grantchen2003/insight/repository/internal/handlers/initializerepository"
 
 	"github.com/gin-gonic/gin"
 )
