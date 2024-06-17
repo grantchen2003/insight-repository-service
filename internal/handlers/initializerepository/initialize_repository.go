@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	fileChunksService "github.com/grantchen2003/insight/repository/internal/services/filechunksservice"
 	fileComponentService "github.com/grantchen2003/insight/repository/internal/services/filecomponentsservice"
+	summarizerService "github.com/grantchen2003/insight/repository/internal/services/summarizerservice"
 )
 
 type RepoInitBatch struct {
@@ -49,9 +50,14 @@ func InitializeRepository(c *gin.Context) {
 		return
 	}
 
-	fmt.Println(fileComponentIds)
+	fileComponentSummaries, err := summarizerService.CreateFileComponentSummaries(fileComponentIds)
+	if err != nil {
+		return
+	}
 
-	// fileComponentSummaries, err := summarizerService.SummarizeFileComponents(fileComponentIds)
+	for _, fileComponentSummary := range fileComponentSummaries {
+		fmt.Println(fileComponentSummary)
+	}
 
 	// fileComponentVectorEmbeddings, err := vectorEmbedderService.Embed(fileComponentSummaries)
 	// fileComponentVectorEmbeddingIds, err := vectorEmbedderService.BatchSaveEmbeddings(fileComponentVectorEmbeddings)

@@ -17,7 +17,7 @@ type FileComponent struct {
 }
 
 type SavedFileComponent struct {
-	id        int
+	id        int32
 	userId    string
 	filePath  string
 	startLine int
@@ -47,7 +47,7 @@ func GetSavedFileComponents(savedFileComponentIds SavedFileComponentIds) ([]Save
 	var savedFileComponents []SavedFileComponent
 	for _, pbSavedFileComponent := range resp.SavedFileComponents {
 		savedFileComponents = append(savedFileComponents, SavedFileComponent{
-			id:        int(pbSavedFileComponent.Id),
+			id:        pbSavedFileComponent.Id,
 			userId:    pbSavedFileComponent.UserId,
 			filePath:  pbSavedFileComponent.FilePath,
 			startLine: int(pbSavedFileComponent.StartLine),
