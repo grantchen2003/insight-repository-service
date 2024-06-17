@@ -23,7 +23,7 @@ type FileChunkSaveStatus struct {
 }
 
 func SaveFileChunks(userId string, fileChunks []FileChunk) ([]FileChunkSaveStatus, error) {
-	conn, err := grpc.Dial(os.Getenv("REPOSITORY_SYNC_SERVICE_ADDRESS"), grpc.WithInsecure())
+	conn, err := grpc.Dial(os.Getenv("FILE_CHUNKS_SERVICE_ADDRESS"), grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
