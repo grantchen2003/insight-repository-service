@@ -14,6 +14,7 @@ type FileMatch struct {
 }
 
 func QueryRepository(c *gin.Context) {
+	// make sure theres no overlap?
 	c.JSON(http.StatusOK, []FileMatch{
 		{
 			Path:      "/server/src/config/database.js",

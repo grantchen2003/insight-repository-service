@@ -2,7 +2,7 @@ package initializerepository
 
 import (
 	"encoding/base64"
-	"log"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -39,14 +39,28 @@ func InitializeRepository(c *gin.Context) {
 
 	filePathsToProcess := getFilePathsToProcess(fileChunkSaveStatuses)
 
-	fileComponents, err := fileComponentService.GetFilesComponents(batch.SessionId, filePathsToProcess)
+	fileComponents, err := fileComponentService.BatchExtractFileComponents(batch.SessionId, filePathsToProcess)
 	if err != nil {
 		return
 	}
 
-	for _, fileComponent := range fileComponents {
-		log.Println(fileComponent)
+	fileComponentIds, err := fileComponentService.SaveFileComponents(fileComponents)
+	if err != nil {
+		return
 	}
+
+	fmt.Println(fileComponentIds)
+
+	// fileComponentSummaries, err := summarizerService.SummarizeFileComponents(fileComponentIds)
+
+	// fileComponentVectorEmbeddings, err := vectorEmbedderService.Embed(fileComponentSummaries)
+	// fileComponentVectorEmbeddingIds, err := vectorEmbedderService.BatchSaveEmbeddings(fileComponentVectorEmbeddings)
+
+	// for _, fileComponent := range fileComponents {
+	// 	FileComponent{
+
+	// 	}
+	// }
 
 	// semantically summarize each file in filePathsToProcess
 	// vector embed each file in filePathsToProcess
