@@ -22,7 +22,7 @@ type FileChunkSaveStatus struct {
 	IsLastSavedChunk bool
 }
 
-func SaveFileChunks(userId string, fileChunks []FileChunk) ([]FileChunkSaveStatus, error) {
+func CreateFileChunks(userId string, fileChunks []FileChunk) ([]FileChunkSaveStatus, error) {
 	conn, err := grpc.Dial(os.Getenv("FILE_CHUNKS_SERVICE_ADDRESS"), grpc.WithInsecure())
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func SaveFileChunks(userId string, fileChunks []FileChunk) ([]FileChunkSaveStatu
 	}
 
 	client := pb.NewFileChunksServiceClient(conn)
-	response, err := client.SaveFileChunks(context.Background(), &pb.SaveFileChunksRequest{
+	response, err := client.CreateFileChunks(context.Background(), &pb.CreateFileChunksRequest{
 		FileChunkPayloads: pbFileChunks,
 	})
 

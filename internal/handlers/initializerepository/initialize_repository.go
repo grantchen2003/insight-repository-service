@@ -25,33 +25,38 @@ type RepoInitBatch struct {
 func InitializeRepository(c *gin.Context) {
 	batch, err := unpackRequest(c)
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
 
 	fileChunks, err := batch.toFileChunks()
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
 
-	fileChunkSaveStatuses, err := fileChunksService.SaveFileChunks(batch.SessionId, fileChunks)
+	fileChunkSaveStatuses, err := fileChunksService.CreateFileChunks(batch.SessionId, fileChunks)
 	if err != nil {
+		fmt.Println(2)
+		fmt.Println(err)
 		return
 	}
 
 	filePathsToProcess := getFilePathsToProcess(fileChunkSaveStatuses)
 
-	fileComponents, err := fileComponentService.BatchExtractFileComponents(batch.SessionId, filePathsToProcess)
+	fileComponents, err := fileComponentService.CreateFileComponents(batch.SessionId, filePathsToProcess)
 	if err != nil {
+		fmt.Println(1)
+		fmt.Println(err)
 		return
 	}
 
-	fileComponentIds, err := fileComponentService.SaveFileComponents(fileComponents)
-	if err != nil {
-		return
-	}
+	fileComponentIds := getFileComponentIds(fileComponents)
 
 	fileComponentSummaries, err := summarizerService.CreateFileComponentSummaries(fileComponentIds)
 	if err != nil {
+		fmt.Println(3)
+		fmt.Println(err)
 		return
 	}
 
@@ -59,17 +64,7 @@ func InitializeRepository(c *gin.Context) {
 		fmt.Println(fileComponentSummary)
 	}
 
-	// fileComponentVectorEmbeddings, err := vectorEmbedderService.Embed(fileComponentSummaries)
-	// fileComponentVectorEmbeddingIds, err := vectorEmbedderService.BatchSaveEmbeddings(fileComponentVectorEmbeddings)
-
-	// for _, fileComponent := range fileComponents {
-	// 	FileComponent{
-
-	// 	}
-	// }
-
-	// semantically summarize each file in filePathsToProcess
-	// vector embed each file in filePathsToProcess
+	// vector embed each file
 
 	c.JSON(http.StatusOK, map[string]string{
 		"repository_id": "123",
@@ -122,4 +117,14 @@ func (batch RepoInitBatch) toFileChunks() ([]fileChunksService.FileChunk, error)
 	}
 
 	return fileChunks, nil
+}
+
+func getFileComponentIds(fileComponents []fileComponentService.FileComponent) []int32 {
+	var fileComponentIds []int32
+
+	for _, fileComponent := range fileComponents {
+		fileComponentIds = append(fileComponentIds, int32(fileComponent.Id))
+	}
+
+	return fileComponentIds
 }

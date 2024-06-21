@@ -24,7 +24,7 @@ func CreateFileComponentSummaries(fileComponentIds []int32) ([]FileComponentSumm
 	defer conn.Close()
 
 	client := pb.NewSummarizerServiceClient(conn)
-	request := &pb.FileComponentIds{
+	request := &pb.CreateFileComponentSummariesRequest{
 		FileComponentIds: fileComponentIds,
 	}
 
