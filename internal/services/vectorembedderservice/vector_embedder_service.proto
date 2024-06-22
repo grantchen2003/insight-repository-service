@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option go_package = "/vectorembedderservice/pb";
+
+message CreateFileComponentVectorEmbeddingsRequest {
+    repeated int32 file_component_ids = 1;
+}
+
+message CreateFileComponentVectorEmbeddingsResponse {
+    repeated int32 file_component_vector_embedding_ids = 1;
+}
+
+service VectorEmbedderService {
+    rpc CreateFileComponentVectorEmbeddings(CreateFileComponentVectorEmbeddingsRequest) returns (CreateFileComponentVectorEmbeddingsResponse);
+}
+

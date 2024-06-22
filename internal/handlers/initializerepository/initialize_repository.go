@@ -2,13 +2,13 @@ package initializerepository
 
 import (
 	"encoding/base64"
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	fileChunksService "github.com/grantchen2003/insight/repository/internal/services/filechunksservice"
 	fileComponentService "github.com/grantchen2003/insight/repository/internal/services/filecomponentsservice"
-	summarizerService "github.com/grantchen2003/insight/repository/internal/services/summarizerservice"
+	vectorEmbedderService "github.com/grantchen2003/insight/repository/internal/services/vectorembedderservice"
 )
 
 type RepoInitBatch struct {
@@ -25,20 +25,16 @@ type RepoInitBatch struct {
 func InitializeRepository(c *gin.Context) {
 	batch, err := unpackRequest(c)
 	if err != nil {
-		fmt.Println(err)
 		return
 	}
 
 	fileChunks, err := batch.toFileChunks()
 	if err != nil {
-		fmt.Println(err)
 		return
 	}
 
 	fileChunkSaveStatuses, err := fileChunksService.CreateFileChunks(batch.SessionId, fileChunks)
 	if err != nil {
-		fmt.Println(2)
-		fmt.Println(err)
 		return
 	}
 
@@ -46,25 +42,16 @@ func InitializeRepository(c *gin.Context) {
 
 	fileComponents, err := fileComponentService.CreateFileComponents(batch.SessionId, filePathsToProcess)
 	if err != nil {
-		fmt.Println(1)
-		fmt.Println(err)
 		return
 	}
 
 	fileComponentIds := getFileComponentIds(fileComponents)
 
-	fileComponentSummaries, err := summarizerService.CreateFileComponentSummaries(fileComponentIds)
-	if err != nil {
-		fmt.Println(3)
-		fmt.Println(err)
+	if _, err := vectorEmbedderService.CreateFileComponentVectorEmbeddings(fileComponentIds); err != nil {
+		log.Println(13)
+		log.Println(err)
 		return
 	}
-
-	for _, fileComponentSummary := range fileComponentSummaries {
-		fmt.Println(fileComponentSummary)
-	}
-
-	// vector embed each file
 
 	c.JSON(http.StatusOK, map[string]string{
 		"repository_id": "123",
