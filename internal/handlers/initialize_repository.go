@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/base64"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -48,8 +47,6 @@ func InitializeRepository(c *gin.Context) {
 	fileComponentIds := getFileComponentIds(fileComponents)
 
 	if _, err := vectorEmbedderService.CreateFileComponentVectorEmbeddings(fileComponentIds); err != nil {
-		log.Println(13)
-		log.Println(err)
 		return
 	}
 
