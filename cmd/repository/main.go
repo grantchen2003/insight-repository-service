@@ -7,7 +7,6 @@ import (
 
 	"github.com/grantchen2003/insight/repository/internal/config"
 	"github.com/grantchen2003/insight/repository/internal/handlers"
-	initializeRepository "github.com/grantchen2003/insight/repository/internal/handlers/initializerepository"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,7 +26,7 @@ func main() {
 	}
 
 	router := gin.Default()
-	router.POST("/initialize_repository", initializeRepository.InitializeRepository)
+	router.POST("/initialize_repository", handlers.InitializeRepository)
 	router.GET("/query_repository", handlers.QueryRepository)
 	router.PUT("/reinitialize_repository", handlers.ReinitializeRepository)
 	router.DELETE("/uninitialize_repository", handlers.UninitializeRepository)

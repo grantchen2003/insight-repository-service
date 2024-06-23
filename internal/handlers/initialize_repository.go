@@ -1,4 +1,4 @@
-package initializerepository
+package handlers
 
 import (
 	"encoding/base64"
