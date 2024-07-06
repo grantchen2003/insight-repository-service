@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	fileChunksService "github.com/grantchen2003/insight/repository/internal/services/filechunksservice"
 	fileComponentService "github.com/grantchen2003/insight/repository/internal/services/filecomponentsservice"
+	usersService "github.com/grantchen2003/insight/repository/internal/services/usersservice"
 	vectorEmbedderService "github.com/grantchen2003/insight/repository/internal/services/vectorembedderservice"
 )
 
@@ -32,14 +33,19 @@ func InitializeRepository(c *gin.Context) {
 		return
 	}
 
-	fileChunkSaveStatuses, err := fileChunksService.CreateFileChunks(batch.SessionId, fileChunks)
+	userId, err := usersService.CreateUser(batch.SessionId)
+	if err != nil {
+		return
+	}
+
+	fileChunkSaveStatuses, err := fileChunksService.CreateFileChunks(userId, fileChunks)
 	if err != nil {
 		return
 	}
 
 	filePathsToProcess := getFilePathsToProcess(fileChunkSaveStatuses)
 
-	fileComponents, err := fileComponentService.CreateFileComponents(batch.SessionId, filePathsToProcess)
+	fileComponents, err := fileComponentService.CreateFileComponents(userId, filePathsToProcess)
 	if err != nil {
 		return
 	}
