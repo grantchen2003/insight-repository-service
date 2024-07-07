@@ -10,7 +10,7 @@ import (
 )
 
 type FileChunk struct {
-	UserId         string
+	RepositoryId   string
 	FilePath       string
 	Content        []byte
 	ChunkIndex     int
@@ -22,7 +22,7 @@ type FileChunkSaveStatus struct {
 	IsLastSavedChunk bool
 }
 
-func CreateFileChunks(userId string, fileChunks []FileChunk) ([]FileChunkSaveStatus, error) {
+func CreateFileChunks(repositoryId string, fileChunks []FileChunk) ([]FileChunkSaveStatus, error) {
 	conn, err := grpc.Dial(os.Getenv("FILE_CHUNKS_SERVICE_ADDRESS"), grpc.WithInsecure())
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func CreateFileChunks(userId string, fileChunks []FileChunk) ([]FileChunkSaveSta
 
 	for _, fileChunk := range fileChunks {
 		pbFileChunks = append(pbFileChunks, &pb.FileChunkPayload{
-			UserId:         userId,
+			RepositoryId:   repositoryId,
 			FilePath:       fileChunk.FilePath,
 			Content:        fileChunk.Content,
 			ChunkIndex:     int32(fileChunk.ChunkIndex),

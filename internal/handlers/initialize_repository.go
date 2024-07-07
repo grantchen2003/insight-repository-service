@@ -7,13 +7,12 @@ import (
 	"github.com/gin-gonic/gin"
 	fileChunksService "github.com/grantchen2003/insight/repository/internal/services/filechunksservice"
 	fileComponentService "github.com/grantchen2003/insight/repository/internal/services/filecomponentsservice"
-	usersService "github.com/grantchen2003/insight/repository/internal/services/usersservice"
 	vectorEmbedderService "github.com/grantchen2003/insight/repository/internal/services/vectorembedderservice"
 )
 
 type RepoInitBatch struct {
-	SessionId string
-	Files     map[string]struct {
+	RepositoryId string
+	Files        map[string]struct {
 		Content        string `json:"content"`
 		ChunkIndex     int    `json:"chunk_index"`
 		NumTotalChunks int    `json:"num_total_chunks"`
@@ -33,19 +32,14 @@ func InitializeRepository(c *gin.Context) {
 		return
 	}
 
-	userId, err := usersService.CreateUser(batch.SessionId)
-	if err != nil {
-		return
-	}
-
-	fileChunkSaveStatuses, err := fileChunksService.CreateFileChunks(userId, fileChunks)
+	fileChunkSaveStatuses, err := fileChunksService.CreateFileChunks(batch.RepositoryId, fileChunks)
 	if err != nil {
 		return
 	}
 
 	filePathsToProcess := getFilePathsToProcess(fileChunkSaveStatuses)
 
-	fileComponents, err := fileComponentService.CreateFileComponents(userId, filePathsToProcess)
+	fileComponents, err := fileComponentService.CreateFileComponents(batch.RepositoryId, filePathsToProcess)
 	if err != nil {
 		return
 	}
@@ -53,10 +47,6 @@ func InitializeRepository(c *gin.Context) {
 	fileComponentIds := getFileComponentIds(fileComponents)
 
 	if _, err := vectorEmbedderService.CreateFileComponentVectorEmbeddings(fileComponentIds); err != nil {
-		return
-	}
-
-	if err := usersService.InitializeUser(userId); err != nil {
 		return
 	}
 
@@ -76,7 +66,7 @@ func unpackRequest(c *gin.Context) (RepoInitBatch, error) {
 		return batch, err
 	}
 
-	batch.SessionId = sessionId
+	batch.RepositoryId = sessionId
 	return batch, err
 }
 
@@ -102,7 +92,7 @@ func (batch RepoInitBatch) toFileChunks() ([]fileChunksService.FileChunk, error)
 		}
 
 		fileChunks = append(fileChunks, fileChunksService.FileChunk{
-			UserId:         batch.SessionId,
+			RepositoryId:   batch.RepositoryId,
 			FilePath:       filePath,
 			Content:        fileContent,
 			ChunkIndex:     fileData.ChunkIndex,

@@ -27,7 +27,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FileComponentsServiceClient interface {
-	CreateFileComponents(ctx context.Context, in *UserFilePaths, opts ...grpc.CallOption) (*FileComponents, error)
+	CreateFileComponents(ctx context.Context, in *RepositoryFilePaths, opts ...grpc.CallOption) (*FileComponents, error)
 	GetFileComponents(ctx context.Context, in *FileComponentIds, opts ...grpc.CallOption) (*FileComponents, error)
 }
 
@@ -39,7 +39,7 @@ func NewFileComponentsServiceClient(cc grpc.ClientConnInterface) FileComponentsS
 	return &fileComponentsServiceClient{cc}
 }
 
-func (c *fileComponentsServiceClient) CreateFileComponents(ctx context.Context, in *UserFilePaths, opts ...grpc.CallOption) (*FileComponents, error) {
+func (c *fileComponentsServiceClient) CreateFileComponents(ctx context.Context, in *RepositoryFilePaths, opts ...grpc.CallOption) (*FileComponents, error) {
 	out := new(FileComponents)
 	err := c.cc.Invoke(ctx, FileComponentsService_CreateFileComponents_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -61,7 +61,7 @@ func (c *fileComponentsServiceClient) GetFileComponents(ctx context.Context, in 
 // All implementations must embed UnimplementedFileComponentsServiceServer
 // for forward compatibility
 type FileComponentsServiceServer interface {
-	CreateFileComponents(context.Context, *UserFilePaths) (*FileComponents, error)
+	CreateFileComponents(context.Context, *RepositoryFilePaths) (*FileComponents, error)
 	GetFileComponents(context.Context, *FileComponentIds) (*FileComponents, error)
 	mustEmbedUnimplementedFileComponentsServiceServer()
 }
@@ -70,7 +70,7 @@ type FileComponentsServiceServer interface {
 type UnimplementedFileComponentsServiceServer struct {
 }
 
-func (UnimplementedFileComponentsServiceServer) CreateFileComponents(context.Context, *UserFilePaths) (*FileComponents, error) {
+func (UnimplementedFileComponentsServiceServer) CreateFileComponents(context.Context, *RepositoryFilePaths) (*FileComponents, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateFileComponents not implemented")
 }
 func (UnimplementedFileComponentsServiceServer) GetFileComponents(context.Context, *FileComponentIds) (*FileComponents, error) {
@@ -90,7 +90,7 @@ func RegisterFileComponentsServiceServer(s grpc.ServiceRegistrar, srv FileCompon
 }
 
 func _FileComponentsService_CreateFileComponents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserFilePaths)
+	in := new(RepositoryFilePaths)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ func _FileComponentsService_CreateFileComponents_Handler(srv interface{}, ctx co
 		FullMethod: FileComponentsService_CreateFileComponents_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FileComponentsServiceServer).CreateFileComponents(ctx, req.(*UserFilePaths))
+		return srv.(FileComponentsServiceServer).CreateFileComponents(ctx, req.(*RepositoryFilePaths))
 	}
 	return interceptor(ctx, in, info, handler)
 }

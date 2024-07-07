@@ -10,15 +10,15 @@ import (
 )
 
 type FileComponent struct {
-	Id       int
-	UserId   string
-	FilePath string
-	Content  string
+	Id           int
+	RepositoryId string
+	FilePath     string
+	Content      string
 }
 
 type FileComponentIds []int32
 
-func CreateFileComponents(userId string, filePaths []string) ([]FileComponent, error) {
+func CreateFileComponents(repositoryId string, filePaths []string) ([]FileComponent, error) {
 	var fileComponents []FileComponent
 
 	conn, err := grpc.Dial(os.Getenv("FILE_COMPONENTS_SERVICE_ADDRESS"), grpc.WithInsecure())
@@ -29,7 +29,7 @@ func CreateFileComponents(userId string, filePaths []string) ([]FileComponent, e
 	defer conn.Close()
 
 	client := pb.NewFileComponentsServiceClient(conn)
-	request := &pb.UserFilePaths{UserId: userId, FilePaths: filePaths}
+	request := &pb.RepositoryFilePaths{RepositoryId: repositoryId, FilePaths: filePaths}
 
 	resp, err := client.CreateFileComponents(context.Background(), request)
 
@@ -39,10 +39,10 @@ func CreateFileComponents(userId string, filePaths []string) ([]FileComponent, e
 
 	for _, fileComponent := range resp.FileComponents {
 		fileComponents = append(fileComponents, FileComponent{
-			Id:       int(fileComponent.Id),
-			UserId:   fileComponent.UserId,
-			FilePath: fileComponent.FilePath,
-			Content:  fileComponent.Content,
+			Id:           int(fileComponent.Id),
+			RepositoryId: fileComponent.RepositoryId,
+			FilePath:     fileComponent.FilePath,
+			Content:      fileComponent.Content,
 		})
 	}
 
