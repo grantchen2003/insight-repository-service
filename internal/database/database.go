@@ -11,6 +11,7 @@ type Database interface {
 	Connect() error
 	Close() error
 	CreateRepository() (string, error)
+	GetRepositoryById(string) (*Repository, error)
 }
 
 var (

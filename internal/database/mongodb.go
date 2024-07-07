@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -65,6 +66,26 @@ func (mongodb *MongoDb) CreateRepository() (string, error) {
 	repositoryId := insertResult.InsertedID.(primitive.ObjectID).Hex()
 
 	return repositoryId, nil
+}
+
+func (mongodb *MongoDb) GetRepositoryById(id string) (*Repository, error) {
+	var result MongoDbRepository
+
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	filter := bson.D{{"_id", objectId}}
+
+	if err := mongodb.getCollection().FindOne(context.TODO(), filter).Decode(&result); err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &Repository{Id: result.Id, IsInitialized: result.IsInitialized}, nil
 }
 
 func (mongodb *MongoDb) getCollection() *mongo.Collection {
