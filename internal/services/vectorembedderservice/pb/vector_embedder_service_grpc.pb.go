@@ -19,6 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
+	VectorEmbedderService_GetSimilarFileComponentIds_FullMethodName          = "/VectorEmbedderService/GetSimilarFileComponentIds"
 	VectorEmbedderService_CreateFileComponentVectorEmbeddings_FullMethodName = "/VectorEmbedderService/CreateFileComponentVectorEmbeddings"
 )
 
@@ -26,6 +27,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type VectorEmbedderServiceClient interface {
+	GetSimilarFileComponentIds(ctx context.Context, in *GetSimilarFileComponentIdsRequest, opts ...grpc.CallOption) (*GetSimilarFileComponentIdsResponse, error)
 	CreateFileComponentVectorEmbeddings(ctx context.Context, in *CreateFileComponentVectorEmbeddingsRequest, opts ...grpc.CallOption) (*CreateFileComponentVectorEmbeddingsResponse, error)
 }
 
@@ -35,6 +37,15 @@ type vectorEmbedderServiceClient struct {
 
 func NewVectorEmbedderServiceClient(cc grpc.ClientConnInterface) VectorEmbedderServiceClient {
 	return &vectorEmbedderServiceClient{cc}
+}
+
+func (c *vectorEmbedderServiceClient) GetSimilarFileComponentIds(ctx context.Context, in *GetSimilarFileComponentIdsRequest, opts ...grpc.CallOption) (*GetSimilarFileComponentIdsResponse, error) {
+	out := new(GetSimilarFileComponentIdsResponse)
+	err := c.cc.Invoke(ctx, VectorEmbedderService_GetSimilarFileComponentIds_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *vectorEmbedderServiceClient) CreateFileComponentVectorEmbeddings(ctx context.Context, in *CreateFileComponentVectorEmbeddingsRequest, opts ...grpc.CallOption) (*CreateFileComponentVectorEmbeddingsResponse, error) {
@@ -50,6 +61,7 @@ func (c *vectorEmbedderServiceClient) CreateFileComponentVectorEmbeddings(ctx co
 // All implementations must embed UnimplementedVectorEmbedderServiceServer
 // for forward compatibility
 type VectorEmbedderServiceServer interface {
+	GetSimilarFileComponentIds(context.Context, *GetSimilarFileComponentIdsRequest) (*GetSimilarFileComponentIdsResponse, error)
 	CreateFileComponentVectorEmbeddings(context.Context, *CreateFileComponentVectorEmbeddingsRequest) (*CreateFileComponentVectorEmbeddingsResponse, error)
 	mustEmbedUnimplementedVectorEmbedderServiceServer()
 }
@@ -58,6 +70,9 @@ type VectorEmbedderServiceServer interface {
 type UnimplementedVectorEmbedderServiceServer struct {
 }
 
+func (UnimplementedVectorEmbedderServiceServer) GetSimilarFileComponentIds(context.Context, *GetSimilarFileComponentIdsRequest) (*GetSimilarFileComponentIdsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSimilarFileComponentIds not implemented")
+}
 func (UnimplementedVectorEmbedderServiceServer) CreateFileComponentVectorEmbeddings(context.Context, *CreateFileComponentVectorEmbeddingsRequest) (*CreateFileComponentVectorEmbeddingsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateFileComponentVectorEmbeddings not implemented")
 }
@@ -72,6 +87,24 @@ type UnsafeVectorEmbedderServiceServer interface {
 
 func RegisterVectorEmbedderServiceServer(s grpc.ServiceRegistrar, srv VectorEmbedderServiceServer) {
 	s.RegisterService(&VectorEmbedderService_ServiceDesc, srv)
+}
+
+func _VectorEmbedderService_GetSimilarFileComponentIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSimilarFileComponentIdsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VectorEmbedderServiceServer).GetSimilarFileComponentIds(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: VectorEmbedderService_GetSimilarFileComponentIds_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VectorEmbedderServiceServer).GetSimilarFileComponentIds(ctx, req.(*GetSimilarFileComponentIdsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _VectorEmbedderService_CreateFileComponentVectorEmbeddings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -99,6 +132,10 @@ var VectorEmbedderService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "VectorEmbedderService",
 	HandlerType: (*VectorEmbedderServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetSimilarFileComponentIds",
+			Handler:    _VectorEmbedderService_GetSimilarFileComponentIds_Handler,
+		},
 		{
 			MethodName: "CreateFileComponentVectorEmbeddings",
 			Handler:    _VectorEmbedderService_CreateFileComponentVectorEmbeddings_Handler,

@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	fileComponentService "github.com/grantchen2003/insight/repository/internal/services/filecomponentsservice"
+	vectorEmbedderService "github.com/grantchen2003/insight/repository/internal/services/vectorembedderservice"
 )
 
 type FileMatch struct {
@@ -13,20 +15,47 @@ type FileMatch struct {
 	Content   string `json:"content"`
 }
 
+type QueryRepositoryRequest struct {
+	RepositoryId string `json:"repository_id"`
+	Query        string `json:"query_string"`
+}
+
 func QueryRepository(c *gin.Context) {
-	// make sure theres no overlap?
-	c.JSON(http.StatusOK, []FileMatch{
-		{
-			Path:      "/server/src/config/database.js",
-			StartLine: 3,
-			EndLine:   15,
-			Content:   "const connectToDatabase = async () => {...};",
-		},
-		{
-			Path:      "/server/src/server.js",
-			StartLine: 25,
-			EndLine:   25,
-			Content:   "await connectToDatabase(app);",
-		},
-	})
+	var request QueryRepositoryRequest
+
+	if err := c.BindJSON(&request); err != nil {
+		panic(err)
+	}
+
+	fileComponentIds, err := vectorEmbedderService.GetSimilarFileComponentIds(
+		request.RepositoryId, request.Query, 3,
+	)
+
+	if err != nil {
+		panic(err)
+	}
+
+	fileComponents, err := fileComponentService.GetFileComponents(fileComponentIds)
+	if err != nil {
+		panic(err)
+	}
+
+	fileMatches := getFileMatches(fileComponents)
+
+	c.JSON(http.StatusOK, fileMatches)
+}
+
+func getFileMatches(fileComponents []fileComponentService.FileComponent) []FileMatch {
+	var fileMatches []FileMatch
+
+	for _, fileComponent := range fileComponents {
+		fileMatches = append(fileMatches, FileMatch{
+			Path:      fileComponent.FilePath,
+			StartLine: fileComponent.StartLine,
+			EndLine:   fileComponent.EndLine,
+			Content:   fileComponent.Content,
+		})
+	}
+
+	return fileMatches
 }

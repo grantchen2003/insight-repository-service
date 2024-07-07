@@ -1,25 +1,22 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/grantchen2003/insight/repository/internal/database"
 )
 
-type request struct {
+type ValidateRepositoryIdRequest struct {
 	RepositoryId string `json:"repository_id"`
 }
 
 func ValidateRepositoryId(c *gin.Context) {
-	var request request
+	var request ValidateRepositoryIdRequest
 
 	if err := c.BindJSON(&request); err != nil {
 		panic(err)
 	}
-
-	fmt.Println(request.RepositoryId)
 
 	db := database.GetSingletonInstance()
 
