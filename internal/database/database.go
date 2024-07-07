@@ -4,16 +4,13 @@ import "sync"
 
 type Repository struct {
 	Id            string
-	SessionId     string
 	IsInitialized bool
 }
 
 type Database interface {
 	Connect() error
 	Close() error
-	CreateRepository(string) (string, error)
-	GetRepositoryBySessionId(string) (*Repository, error)
-	SetRepositoryIsInitialized(string, bool) error
+	CreateRepository() (string, error)
 }
 
 var (

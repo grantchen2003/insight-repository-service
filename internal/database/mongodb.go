@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -17,7 +16,6 @@ type MongoDb struct {
 
 type MongoDbRepository struct {
 	Id            string `bson:"_id,omitempty"`
-	SessionId     string
 	IsInitialized bool
 }
 
@@ -51,12 +49,10 @@ func (mongodb *MongoDb) Close() error {
 	return nil
 }
 
-func (mongodb *MongoDb) CreateRepository(sessionId string) (string, error) {
+func (mongodb *MongoDb) CreateRepository() (string, error) {
 	repository := struct {
-		SessionId     string
 		IsInitialized bool
 	}{
-		SessionId:     sessionId,
 		IsInitialized: false,
 	}
 
@@ -69,38 +65,6 @@ func (mongodb *MongoDb) CreateRepository(sessionId string) (string, error) {
 	repositoryId := insertResult.InsertedID.(primitive.ObjectID).Hex()
 
 	return repositoryId, nil
-}
-
-func (mongodb *MongoDb) GetRepositoryBySessionId(sessionId string) (*Repository, error) {
-	var result MongoDbRepository
-
-	filter := bson.D{{"sessionid", sessionId}}
-
-	if err := mongodb.getCollection().FindOne(context.TODO(), filter).Decode(&result); err != nil {
-		if err == mongo.ErrNoDocuments {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	return &Repository{Id: result.Id, SessionId: result.SessionId, IsInitialized: result.IsInitialized}, nil
-}
-
-func (mongodb *MongoDb) SetRepositoryIsInitialized(id string, newIsInitialized bool) error {
-	userDocId, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	filter := bson.D{{"_id", userDocId}}
-	update := bson.D{
-		{"$set", bson.D{
-			{"isinitialized", newIsInitialized},
-		}},
-	}
-
-	_, err = mongodb.getCollection().UpdateOne(context.TODO(), filter, update)
-	return err
 }
 
 func (mongodb *MongoDb) getCollection() *mongo.Collection {

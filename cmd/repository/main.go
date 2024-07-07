@@ -29,6 +29,7 @@ func main() {
 	database.GetSingletonInstance().Connect()
 
 	router := gin.Default()
+	router.POST("/create_repository", handlers.CreateRepository)
 	router.POST("/initialize_repository", handlers.InitializeRepository)
 	router.GET("/query_repository", handlers.QueryRepository)
 	router.PUT("/reinitialize_repository", handlers.ReinitializeRepository)
