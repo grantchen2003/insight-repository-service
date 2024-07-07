@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/grantchen2003/insight/repository/internal/config"
+	"github.com/grantchen2003/insight/repository/internal/database"
 	"github.com/grantchen2003/insight/repository/internal/handlers"
 
 	"github.com/gin-gonic/gin"
@@ -24,6 +25,8 @@ func main() {
 	if envIsProduction {
 		gin.SetMode(gin.ReleaseMode)
 	}
+
+	database.GetSingletonInstance().Connect()
 
 	router := gin.Default()
 	router.POST("/initialize_repository", handlers.InitializeRepository)

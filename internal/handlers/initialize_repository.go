@@ -5,14 +5,15 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/grantchen2003/insight/repository/internal/database"
 	fileChunksService "github.com/grantchen2003/insight/repository/internal/services/filechunksservice"
 	fileComponentService "github.com/grantchen2003/insight/repository/internal/services/filecomponentsservice"
 	vectorEmbedderService "github.com/grantchen2003/insight/repository/internal/services/vectorembedderservice"
 )
 
 type RepoInitBatch struct {
-	RepositoryId string
-	Files        map[string]struct {
+	SessionId string
+	Files     map[string]struct {
 		Content        string `json:"content"`
 		ChunkIndex     int    `json:"chunk_index"`
 		NumTotalChunks int    `json:"num_total_chunks"`
@@ -27,19 +28,26 @@ func InitializeRepository(c *gin.Context) {
 		return
 	}
 
-	fileChunks, err := batch.toFileChunks()
+	db := database.GetSingletonInstance()
+
+	repositoryId, err := db.CreateRepository(batch.SessionId)
 	if err != nil {
 		return
 	}
 
-	fileChunkSaveStatuses, err := fileChunksService.CreateFileChunks(batch.RepositoryId, fileChunks)
+	fileChunks, err := getFileChunks(batch, repositoryId)
+	if err != nil {
+		return
+	}
+
+	fileChunkSaveStatuses, err := fileChunksService.CreateFileChunks(repositoryId, fileChunks)
 	if err != nil {
 		return
 	}
 
 	filePathsToProcess := getFilePathsToProcess(fileChunkSaveStatuses)
 
-	fileComponents, err := fileComponentService.CreateFileComponents(batch.RepositoryId, filePathsToProcess)
+	fileComponents, err := fileComponentService.CreateFileComponents(repositoryId, filePathsToProcess)
 	if err != nil {
 		return
 	}
@@ -66,7 +74,7 @@ func unpackRequest(c *gin.Context) (RepoInitBatch, error) {
 		return batch, err
 	}
 
-	batch.RepositoryId = sessionId
+	batch.SessionId = sessionId
 	return batch, err
 }
 
@@ -82,7 +90,7 @@ func getFilePathsToProcess(fileChunkSaveStatuses []fileChunksService.FileChunkSa
 	return filePathsToProcess
 }
 
-func (batch RepoInitBatch) toFileChunks() ([]fileChunksService.FileChunk, error) {
+func getFileChunks(batch RepoInitBatch, repositoryId string) ([]fileChunksService.FileChunk, error) {
 	var fileChunks []fileChunksService.FileChunk
 
 	for filePath, fileData := range batch.Files {
@@ -92,7 +100,7 @@ func (batch RepoInitBatch) toFileChunks() ([]fileChunksService.FileChunk, error)
 		}
 
 		fileChunks = append(fileChunks, fileChunksService.FileChunk{
-			RepositoryId:   batch.RepositoryId,
+			RepositoryId:   repositoryId,
 			FilePath:       filePath,
 			Content:        fileContent,
 			ChunkIndex:     fileData.ChunkIndex,
