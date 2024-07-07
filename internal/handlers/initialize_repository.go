@@ -56,6 +56,10 @@ func InitializeRepository(c *gin.Context) {
 		return
 	}
 
+	if err := usersService.InitializeUser(userId); err != nil {
+		return
+	}
+
 	c.JSON(http.StatusOK, map[string]string{
 		"repository_id": "123",
 	})

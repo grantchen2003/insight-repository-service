@@ -28,3 +28,20 @@ func CreateUser(sessionId string) (string, error) {
 
 	return resp.UserId, nil
 }
+
+func InitializeUser(userId string) error {
+
+	conn, err := grpc.Dial(os.Getenv("USERS_SERVICE_ADDRESS"), grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("error connecting to users service: %v", err)
+		return err
+	}
+	defer conn.Close()
+
+	client := pb.NewUsersServiceClient(conn)
+	request := &pb.InitializeUserRequest{UserId: userId}
+
+	_, err = client.InitializeUser(context.Background(), request)
+
+	return err
+}
