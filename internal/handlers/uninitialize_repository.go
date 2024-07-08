@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/grantchen2003/insight/repository/internal/database"
 	fileChunksService "github.com/grantchen2003/insight/repository/internal/services/filechunksservice"
+	fileComponentService "github.com/grantchen2003/insight/repository/internal/services/filecomponentsservice"
 )
 
 type UninitializeRepositoryRequest struct {
@@ -26,6 +27,10 @@ func UninitializeRepository(c *gin.Context) {
 	}
 
 	if err := fileChunksService.DeleteFileChunksByRepositoryId(request.RepositoryId); err != nil {
+		panic(err)
+	}
+
+	if err := fileComponentService.DeleteFileComponentsByRepositoryId(request.RepositoryId); err != nil {
 		panic(err)
 	}
 

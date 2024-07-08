@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-
 option go_package = "/filecomponentsservice/pb";
 
+import "google/protobuf/empty.proto";
 
 message FileComponent {
     int32 id = 1;
@@ -26,7 +26,12 @@ message RepositoryFilePaths {
     repeated string file_paths = 2;
 }
 
+message DeleteFileComponentsByRepositoryIdRequest {
+    string repository_id = 1;
+}
+
 service FileComponentsService {
     rpc CreateFileComponents(RepositoryFilePaths) returns(FileComponents);
     rpc GetFileComponents(FileComponentIds) returns (FileComponents);
+    rpc DeleteFileComponentsByRepositoryId(DeleteFileComponentsByRepositoryIdRequest) returns (google.protobuf.Empty);
 }

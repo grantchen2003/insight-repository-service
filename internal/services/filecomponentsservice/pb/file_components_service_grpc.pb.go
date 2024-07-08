@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,8 +20,9 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	FileComponentsService_CreateFileComponents_FullMethodName = "/FileComponentsService/CreateFileComponents"
-	FileComponentsService_GetFileComponents_FullMethodName    = "/FileComponentsService/GetFileComponents"
+	FileComponentsService_CreateFileComponents_FullMethodName               = "/FileComponentsService/CreateFileComponents"
+	FileComponentsService_GetFileComponents_FullMethodName                  = "/FileComponentsService/GetFileComponents"
+	FileComponentsService_DeleteFileComponentsByRepositoryId_FullMethodName = "/FileComponentsService/DeleteFileComponentsByRepositoryId"
 )
 
 // FileComponentsServiceClient is the client API for FileComponentsService service.
@@ -29,6 +31,7 @@ const (
 type FileComponentsServiceClient interface {
 	CreateFileComponents(ctx context.Context, in *RepositoryFilePaths, opts ...grpc.CallOption) (*FileComponents, error)
 	GetFileComponents(ctx context.Context, in *FileComponentIds, opts ...grpc.CallOption) (*FileComponents, error)
+	DeleteFileComponentsByRepositoryId(ctx context.Context, in *DeleteFileComponentsByRepositoryIdRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type fileComponentsServiceClient struct {
@@ -57,12 +60,22 @@ func (c *fileComponentsServiceClient) GetFileComponents(ctx context.Context, in 
 	return out, nil
 }
 
+func (c *fileComponentsServiceClient) DeleteFileComponentsByRepositoryId(ctx context.Context, in *DeleteFileComponentsByRepositoryIdRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, FileComponentsService_DeleteFileComponentsByRepositoryId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FileComponentsServiceServer is the server API for FileComponentsService service.
 // All implementations must embed UnimplementedFileComponentsServiceServer
 // for forward compatibility
 type FileComponentsServiceServer interface {
 	CreateFileComponents(context.Context, *RepositoryFilePaths) (*FileComponents, error)
 	GetFileComponents(context.Context, *FileComponentIds) (*FileComponents, error)
+	DeleteFileComponentsByRepositoryId(context.Context, *DeleteFileComponentsByRepositoryIdRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedFileComponentsServiceServer()
 }
 
@@ -75,6 +88,9 @@ func (UnimplementedFileComponentsServiceServer) CreateFileComponents(context.Con
 }
 func (UnimplementedFileComponentsServiceServer) GetFileComponents(context.Context, *FileComponentIds) (*FileComponents, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFileComponents not implemented")
+}
+func (UnimplementedFileComponentsServiceServer) DeleteFileComponentsByRepositoryId(context.Context, *DeleteFileComponentsByRepositoryIdRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteFileComponentsByRepositoryId not implemented")
 }
 func (UnimplementedFileComponentsServiceServer) mustEmbedUnimplementedFileComponentsServiceServer() {}
 
@@ -125,6 +141,24 @@ func _FileComponentsService_GetFileComponents_Handler(srv interface{}, ctx conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FileComponentsService_DeleteFileComponentsByRepositoryId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteFileComponentsByRepositoryIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FileComponentsServiceServer).DeleteFileComponentsByRepositoryId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FileComponentsService_DeleteFileComponentsByRepositoryId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FileComponentsServiceServer).DeleteFileComponentsByRepositoryId(ctx, req.(*DeleteFileComponentsByRepositoryIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // FileComponentsService_ServiceDesc is the grpc.ServiceDesc for FileComponentsService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -139,6 +173,10 @@ var FileComponentsService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetFileComponents",
 			Handler:    _FileComponentsService_GetFileComponents_Handler,
+		},
+		{
+			MethodName: "DeleteFileComponentsByRepositoryId",
+			Handler:    _FileComponentsService_DeleteFileComponentsByRepositoryId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
