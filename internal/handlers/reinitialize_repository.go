@@ -7,7 +7,5 @@ import (
 )
 
 func ReinitializeRepository(c *gin.Context) {
-	c.JSON(http.StatusOK, map[string]string{
-		"repository_id": "id1",
-	})
+	c.JSON(http.StatusOK, nil)
 }
