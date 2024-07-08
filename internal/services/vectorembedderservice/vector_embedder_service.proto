@@ -2,6 +2,8 @@ syntax = "proto3";
 
 option go_package = "/vectorembedderservice/pb";
 
+import "google/protobuf/empty.proto";
+
 message CreateFileComponentVectorEmbeddingsRequest {
     repeated int32 file_component_ids = 1;
 }
@@ -20,8 +22,15 @@ message GetSimilarFileComponentIdsResponse {
     repeated int32 file_component_ids = 1;
 }
 
+message DeleteFileComponentVectorEmbeddingsByRepositoryIdRequest {
+    string repository_id = 1;
+}
+
 service VectorEmbedderService {
     rpc GetSimilarFileComponentIds(GetSimilarFileComponentIdsRequest) returns (GetSimilarFileComponentIdsResponse);
     rpc CreateFileComponentVectorEmbeddings(CreateFileComponentVectorEmbeddingsRequest) returns (CreateFileComponentVectorEmbeddingsResponse);
+    rpc DeleteFileComponentVectorEmbeddingsByRepositoryId(DeleteFileComponentVectorEmbeddingsByRepositoryIdRequest) returns (google.protobuf.Empty);
 }
+
+
 

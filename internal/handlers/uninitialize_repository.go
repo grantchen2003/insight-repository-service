@@ -7,6 +7,7 @@ import (
 	"github.com/grantchen2003/insight/repository/internal/database"
 	fileChunksService "github.com/grantchen2003/insight/repository/internal/services/filechunksservice"
 	fileComponentService "github.com/grantchen2003/insight/repository/internal/services/filecomponentsservice"
+	vectorEmbedderService "github.com/grantchen2003/insight/repository/internal/services/vectorembedderservice"
 )
 
 type UninitializeRepositoryRequest struct {
@@ -31,6 +32,10 @@ func UninitializeRepository(c *gin.Context) {
 	}
 
 	if err := fileComponentService.DeleteFileComponentsByRepositoryId(request.RepositoryId); err != nil {
+		panic(err)
+	}
+
+	if err := vectorEmbedderService.DeleteFileComponentVectorEmbeddingsByRepositoryId(request.RepositoryId); err != nil {
 		panic(err)
 	}
 

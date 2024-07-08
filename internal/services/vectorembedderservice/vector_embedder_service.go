@@ -52,3 +52,18 @@ func GetSimilarFileComponentIds(repositoryId string, query string, limit int) ([
 
 	return resp.FileComponentIds, nil
 }
+
+func DeleteFileComponentVectorEmbeddingsByRepositoryId(repositoryId string) error {
+	conn, err := grpc.Dial(os.Getenv("VECTOR_EMBEDDER_SERVICE_ADDRESS"), grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("error connecting to vector embedder service: %v", err)
+		return err
+	}
+	defer conn.Close()
+
+	client := pb.NewVectorEmbedderServiceClient(conn)
+	request := &pb.DeleteFileComponentVectorEmbeddingsByRepositoryIdRequest{RepositoryId: repositoryId}
+
+	_, err = client.DeleteFileComponentVectorEmbeddingsByRepositoryId(context.Background(), request)
+	return err
+}
