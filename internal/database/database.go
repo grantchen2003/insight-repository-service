@@ -12,6 +12,7 @@ type Database interface {
 	Close() error
 	CreateRepository() (string, error)
 	GetRepositoryById(string) (*Repository, error)
+	DeleteRepository(string) error
 }
 
 var (

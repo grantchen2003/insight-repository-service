@@ -88,6 +88,19 @@ func (mongodb *MongoDb) GetRepositoryById(id string) (*Repository, error) {
 	return &Repository{Id: result.Id, IsInitialized: result.IsInitialized}, nil
 }
 
+func (mongodb *MongoDb) DeleteRepository(id string) error {
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	filter := bson.M{"_id": objectId}
+
+	_, err = mongodb.getCollection().DeleteOne(context.TODO(), filter)
+
+	return err
+}
+
 func (mongodb *MongoDb) getCollection() *mongo.Collection {
 	databaseName := os.Getenv("MONGODB_DATABASE_NAME")
 	collectionName := os.Getenv("MONGODB_COLLECTION_NAME")
