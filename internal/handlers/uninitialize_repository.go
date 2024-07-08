@@ -39,7 +39,5 @@ func UninitializeRepository(c *gin.Context) {
 		panic(err)
 	}
 
-	c.JSON(http.StatusOK, map[string]string{
-		"repository_id": "id1",
-	})
+	c.JSON(http.StatusOK, nil)
 }
