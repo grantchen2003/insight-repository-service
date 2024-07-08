@@ -60,5 +60,19 @@ func CreateFileChunks(repositoryId string, fileChunks []FileChunk) ([]FileChunkS
 	}
 
 	return fileChunkSaveStatuses, nil
+}
 
+func DeleteFileChunksByRepositoryId(repositoryId string) error {
+	conn, err := grpc.Dial(os.Getenv("FILE_CHUNKS_SERVICE_ADDRESS"), grpc.WithInsecure())
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	client := pb.NewFileChunksServiceClient(conn)
+	_, err = client.DeleteFileChunksByRepositoryId(context.Background(), &pb.DeleteFileChunksByRepositoryIdRequest{
+		RepositoryId: repositoryId,
+	})
+
+	return err
 }
