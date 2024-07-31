@@ -33,7 +33,7 @@ type FileComponentsServiceClient interface {
 	CreateFileComponents(ctx context.Context, in *RepositoryFilePaths, opts ...grpc.CallOption) (*FileComponents, error)
 	GetFileComponents(ctx context.Context, in *FileComponentIds, opts ...grpc.CallOption) (*FileComponents, error)
 	DeleteFileComponentsByRepositoryId(ctx context.Context, in *DeleteFileComponentsByRepositoryIdRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	DeleteFileComponentsByRepositoryIdAndFilePaths(ctx context.Context, in *DeleteFileComponentsByRepositoryIdAndFilePathsRequest, opts ...grpc.CallOption) (*DeleteFileComponentsByRepositoryIdAndFilePathsResponse, error)
+	DeleteFileComponentsByRepositoryIdAndFilePaths(ctx context.Context, in *DeleteFileComponentsByRepositoryIdAndFilePathsRequest, opts ...grpc.CallOption) (*FileComponentIds, error)
 }
 
 type fileComponentsServiceClient struct {
@@ -71,8 +71,8 @@ func (c *fileComponentsServiceClient) DeleteFileComponentsByRepositoryId(ctx con
 	return out, nil
 }
 
-func (c *fileComponentsServiceClient) DeleteFileComponentsByRepositoryIdAndFilePaths(ctx context.Context, in *DeleteFileComponentsByRepositoryIdAndFilePathsRequest, opts ...grpc.CallOption) (*DeleteFileComponentsByRepositoryIdAndFilePathsResponse, error) {
-	out := new(DeleteFileComponentsByRepositoryIdAndFilePathsResponse)
+func (c *fileComponentsServiceClient) DeleteFileComponentsByRepositoryIdAndFilePaths(ctx context.Context, in *DeleteFileComponentsByRepositoryIdAndFilePathsRequest, opts ...grpc.CallOption) (*FileComponentIds, error) {
+	out := new(FileComponentIds)
 	err := c.cc.Invoke(ctx, FileComponentsService_DeleteFileComponentsByRepositoryIdAndFilePaths_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -87,7 +87,7 @@ type FileComponentsServiceServer interface {
 	CreateFileComponents(context.Context, *RepositoryFilePaths) (*FileComponents, error)
 	GetFileComponents(context.Context, *FileComponentIds) (*FileComponents, error)
 	DeleteFileComponentsByRepositoryId(context.Context, *DeleteFileComponentsByRepositoryIdRequest) (*emptypb.Empty, error)
-	DeleteFileComponentsByRepositoryIdAndFilePaths(context.Context, *DeleteFileComponentsByRepositoryIdAndFilePathsRequest) (*DeleteFileComponentsByRepositoryIdAndFilePathsResponse, error)
+	DeleteFileComponentsByRepositoryIdAndFilePaths(context.Context, *DeleteFileComponentsByRepositoryIdAndFilePathsRequest) (*FileComponentIds, error)
 	mustEmbedUnimplementedFileComponentsServiceServer()
 }
 
@@ -104,7 +104,7 @@ func (UnimplementedFileComponentsServiceServer) GetFileComponents(context.Contex
 func (UnimplementedFileComponentsServiceServer) DeleteFileComponentsByRepositoryId(context.Context, *DeleteFileComponentsByRepositoryIdRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteFileComponentsByRepositoryId not implemented")
 }
-func (UnimplementedFileComponentsServiceServer) DeleteFileComponentsByRepositoryIdAndFilePaths(context.Context, *DeleteFileComponentsByRepositoryIdAndFilePathsRequest) (*DeleteFileComponentsByRepositoryIdAndFilePathsResponse, error) {
+func (UnimplementedFileComponentsServiceServer) DeleteFileComponentsByRepositoryIdAndFilePaths(context.Context, *DeleteFileComponentsByRepositoryIdAndFilePathsRequest) (*FileComponentIds, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteFileComponentsByRepositoryIdAndFilePaths not implemented")
 }
 func (UnimplementedFileComponentsServiceServer) mustEmbedUnimplementedFileComponentsServiceServer() {}
