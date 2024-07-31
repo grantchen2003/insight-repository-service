@@ -32,27 +32,35 @@ func InitializeRepository(c *gin.Context) {
 		return
 	}
 
-	fileChunkSaveStatuses, err := fileChunksService.CreateFileChunks(request.RepositoryId, fileChunks)
-	if err != nil {
-		return
-	}
-
-	filePathsToProcess := getFilePathsToProcess(fileChunkSaveStatuses)
-
-	fileComponents, err := fileComponentService.CreateFileComponents(request.RepositoryId, filePathsToProcess)
-	if err != nil {
-		return
-	}
-
-	fileComponentIds := getFileComponentIds(fileComponents)
-
-	if _, err := vectorEmbedderService.CreateFileComponentVectorEmbeddings(fileComponentIds); err != nil {
+	if err := addFiles(request.RepositoryId, fileChunks); err != nil {
 		return
 	}
 
 	c.JSON(http.StatusOK, map[string]string{
 		"repository_id": "123",
 	})
+}
+
+func addFiles(repositoryId string, fileChunks []fileChunksService.FileChunk) error {
+	fileChunkSaveStatuses, err := fileChunksService.CreateFileChunks(repositoryId, fileChunks)
+	if err != nil {
+		return err
+	}
+
+	filePathsToProcess := getFilePathsToProcess(fileChunkSaveStatuses)
+
+	fileComponents, err := fileComponentService.CreateFileComponents(repositoryId, filePathsToProcess)
+	if err != nil {
+		return err
+	}
+
+	fileComponentIds := getFileComponentIds(fileComponents)
+
+	if _, err := vectorEmbedderService.CreateFileComponentVectorEmbeddings(fileComponentIds); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func unpackInitializeRepositoryRequest(c *gin.Context) (InitializeRepositoryRequest, error) {

@@ -101,3 +101,25 @@ func DeleteFileComponentsByRepositoryId(repositoryId string) error {
 
 	return err
 }
+
+func DeleteFileComponentsByRepositoryIdAndFilePaths(repositoryId string, filePaths []string) ([]int32, error) {
+	conn, err := grpc.Dial(os.Getenv("FILE_COMPONENTS_SERVICE_ADDRESS"), grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("error connecting to file components service: %v", err)
+		return nil, err
+	}
+	defer conn.Close()
+
+	client := pb.NewFileComponentsServiceClient(conn)
+	request := &pb.DeleteFileComponentsByRepositoryIdAndFilePathsRequest{
+		RepositoryId: repositoryId,
+		FilePaths:    filePaths,
+	}
+
+	response, err := client.DeleteFileComponentsByRepositoryIdAndFilePaths(context.Background(), request)
+	if err != nil {
+		return nil, err
+	}
+
+	return response.FileComponentIds, nil
+}

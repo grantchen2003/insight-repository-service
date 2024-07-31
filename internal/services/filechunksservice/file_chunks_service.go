@@ -76,3 +76,19 @@ func DeleteFileChunksByRepositoryId(repositoryId string) error {
 
 	return err
 }
+
+func DeleteFileChunksByRepositoryIdAndFilePaths(repositoryId string, filePaths []string) error {
+	conn, err := grpc.Dial(os.Getenv("FILE_CHUNKS_SERVICE_ADDRESS"), grpc.WithInsecure())
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	client := pb.NewFileChunksServiceClient(conn)
+	_, err = client.DeleteFileChunksByRepositoryIdAndFilePaths(context.Background(), &pb.DeleteFileChunksByRepositoryIdAndFilePathsRequest{
+		RepositoryId: repositoryId,
+		FilePaths:    filePaths,
+	})
+
+	return err
+}
