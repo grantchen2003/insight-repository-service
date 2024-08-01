@@ -42,6 +42,10 @@ func InitializeRepository(c *gin.Context) {
 }
 
 func addFiles(repositoryId string, fileChunks []fileChunksService.FileChunk) error {
+	if len(fileChunks) == 0 {
+		return nil
+	}
+
 	fileChunkSaveStatuses, err := fileChunksService.CreateFileChunks(repositoryId, fileChunks)
 	if err != nil {
 		return err

@@ -72,6 +72,10 @@ func ReinitializeRepository(c *gin.Context) {
 }
 
 func deleteFiles(repositoryId string, filePaths []string) error {
+	if len(filePaths) == 0 {
+		return nil
+	}
+
 	err := fileChunksService.DeleteFileChunksByRepositoryIdAndFilePaths(repositoryId, filePaths)
 	if err != nil {
 		return err
