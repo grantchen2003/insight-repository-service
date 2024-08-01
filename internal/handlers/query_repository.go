@@ -18,6 +18,7 @@ type FileMatch struct {
 type QueryRepositoryRequest struct {
 	RepositoryId string `json:"repository_id"`
 	Query        string `json:"query_string"`
+	Limit        int    `json:"limit"`
 }
 
 func QueryRepository(c *gin.Context) {
@@ -28,7 +29,7 @@ func QueryRepository(c *gin.Context) {
 	}
 
 	fileComponentIds, err := vectorEmbedderService.GetSimilarFileComponentIds(
-		request.RepositoryId, request.Query, 3,
+		request.RepositoryId, request.Query, request.Limit,
 	)
 
 	if err != nil {
