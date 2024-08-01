@@ -1,3 +1,5 @@
+#!/bin/bash
+
 cd ../internal/services
 
 for dir in */ ; do
