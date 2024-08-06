@@ -25,6 +25,7 @@ func QueryRepository(c *gin.Context) {
 	var request QueryRepositoryRequest
 
 	if err := c.BindJSON(&request); err != nil {
+		c.Status(http.StatusInternalServerError)
 		panic(err)
 	}
 
@@ -33,11 +34,13 @@ func QueryRepository(c *gin.Context) {
 	)
 
 	if err != nil {
+		c.Status(http.StatusInternalServerError)
 		panic(err)
 	}
 
 	fileComponents, err := fileComponentService.GetFileComponents(fileComponentIds)
 	if err != nil {
+		c.Status(http.StatusInternalServerError)
 		panic(err)
 	}
 

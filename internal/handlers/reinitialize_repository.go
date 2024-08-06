@@ -26,14 +26,48 @@ func ReinitializeRepository(c *gin.Context) {
 	var request ReinitializeRepositoryRequest
 
 	if err := c.BindJSON(&request); err != nil {
+		c.Status(http.StatusInternalServerError)
 		panic(err)
 	}
 
+	addedFilePaths, updatedFilePaths, deletedFilePaths := categorizeFileChanges(request.Changes)
+
+	addedFileChunks, err := getFileChunksFromFilePaths(request, addedFilePaths)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		panic(err)
+	}
+
+	if err := addFiles(request.RepositoryId, addedFileChunks); err != nil {
+		c.Status(http.StatusInternalServerError)
+		panic(err)
+	}
+
+	updatedFileChunks, err := getFileChunksFromFilePaths(request, updatedFilePaths)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		panic(err)
+	}
+
+	if err := updateFiles(request.RepositoryId, updatedFileChunks); err != nil {
+		c.Status(http.StatusInternalServerError)
+		panic(err)
+	}
+
+	if err := deleteFiles(request.RepositoryId, deletedFilePaths); err != nil {
+		c.Status(http.StatusInternalServerError)
+		panic(err)
+	}
+
+	c.Status(http.StatusOK)
+}
+
+func categorizeFileChanges(changes map[string]string) ([]string, []string, []string) {
 	var addedFilePaths []string
 	var updatedFilePaths []string
 	var deletedFilePaths []string
 
-	for filePath, change := range request.Changes {
+	for filePath, change := range changes {
 		switch change {
 		case "add":
 			addedFilePaths = append(addedFilePaths, filePath)
@@ -46,29 +80,7 @@ func ReinitializeRepository(c *gin.Context) {
 		}
 	}
 
-	addedFileChunks, err := getFileChunksFromFilePaths(request, addedFilePaths)
-	if err != nil {
-		panic(err)
-	}
-
-	if err := addFiles(request.RepositoryId, addedFileChunks); err != nil {
-		panic(err)
-	}
-
-	updatedFileChunks, err := getFileChunksFromFilePaths(request, updatedFilePaths)
-	if err != nil {
-		panic(err)
-	}
-
-	if err := updateFiles(request.RepositoryId, updatedFileChunks); err != nil {
-		panic(err)
-	}
-
-	if err := deleteFiles(request.RepositoryId, deletedFilePaths); err != nil {
-		panic(err)
-	}
-
-	c.JSON(http.StatusOK, nil)
+	return addedFilePaths, updatedFilePaths, deletedFilePaths
 }
 
 func deleteFiles(repositoryId string, filePaths []string) error {

@@ -15,6 +15,7 @@ func ValidateRepositoryId(c *gin.Context) {
 	var request ValidateRepositoryIdRequest
 
 	if err := c.BindJSON(&request); err != nil {
+		c.Status(http.StatusInternalServerError)
 		panic(err)
 	}
 
@@ -22,6 +23,7 @@ func ValidateRepositoryId(c *gin.Context) {
 
 	repository, err := db.GetRepositoryById(request.RepositoryId)
 	if err != nil {
+		c.Status(http.StatusInternalServerError)
 		panic(err)
 	}
 

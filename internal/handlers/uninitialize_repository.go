@@ -18,26 +18,31 @@ func UninitializeRepository(c *gin.Context) {
 	var request UninitializeRepositoryRequest
 
 	if err := c.BindJSON(&request); err != nil {
+		c.Status(http.StatusInternalServerError)
 		panic(err)
 	}
 
 	db := database.GetSingletonInstance()
 
 	if err := db.DeleteRepository(request.RepositoryId); err != nil {
+		c.Status(http.StatusInternalServerError)
 		panic(err)
 	}
 
 	if err := fileChunksService.DeleteFileChunksByRepositoryId(request.RepositoryId); err != nil {
+		c.Status(http.StatusInternalServerError)
 		panic(err)
 	}
 
 	if err := fileComponentService.DeleteFileComponentsByRepositoryId(request.RepositoryId); err != nil {
+		c.Status(http.StatusInternalServerError)
 		panic(err)
 	}
 
 	if err := vectorEmbedderService.DeleteFileComponentVectorEmbeddingsByRepositoryId(request.RepositoryId); err != nil {
+		c.Status(http.StatusInternalServerError)
 		panic(err)
 	}
 
-	c.JSON(http.StatusOK, nil)
+	c.Status(http.StatusOK)
 }

@@ -12,6 +12,7 @@ func CreateRepository(c *gin.Context) {
 
 	repositoryId, err := db.CreateRepository()
 	if err != nil {
+		c.Status(http.StatusInternalServerError)
 		panic(err)
 	}
 

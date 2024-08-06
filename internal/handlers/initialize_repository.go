@@ -24,21 +24,22 @@ type InitializeRepositoryRequest struct {
 func InitializeRepository(c *gin.Context) {
 	request, err := unpackInitializeRepositoryRequest(c)
 	if err != nil {
-		return
+		c.Status(http.StatusInternalServerError)
+		panic(err)
 	}
 
 	fileChunks, err := getFileChunks(request)
 	if err != nil {
-		return
+		c.Status(http.StatusInternalServerError)
+		panic(err)
 	}
 
 	if err := addFiles(request.RepositoryId, fileChunks); err != nil {
-		return
+		c.Status(http.StatusInternalServerError)
+		panic(err)
 	}
 
-	c.JSON(http.StatusOK, map[string]string{
-		"repository_id": "123",
-	})
+	c.Status(http.StatusOK)
 }
 
 func addFiles(repositoryId string, fileChunks []fileChunksService.FileChunk) error {
