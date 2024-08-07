@@ -30,7 +30,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FileComponentsServiceClient interface {
-	CreateFileComponents(ctx context.Context, in *RepositoryFilePaths, opts ...grpc.CallOption) (*FileComponents, error)
+	CreateFileComponents(ctx context.Context, in *RepositoryFilePaths, opts ...grpc.CallOption) (FileComponentsService_CreateFileComponentsClient, error)
 	GetFileComponents(ctx context.Context, in *FileComponentIds, opts ...grpc.CallOption) (*FileComponents, error)
 	DeleteFileComponentsByRepositoryId(ctx context.Context, in *DeleteFileComponentsByRepositoryIdRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	DeleteFileComponentsByRepositoryIdAndFilePaths(ctx context.Context, in *DeleteFileComponentsByRepositoryIdAndFilePathsRequest, opts ...grpc.CallOption) (*FileComponentIds, error)
@@ -44,13 +44,36 @@ func NewFileComponentsServiceClient(cc grpc.ClientConnInterface) FileComponentsS
 	return &fileComponentsServiceClient{cc}
 }
 
-func (c *fileComponentsServiceClient) CreateFileComponents(ctx context.Context, in *RepositoryFilePaths, opts ...grpc.CallOption) (*FileComponents, error) {
-	out := new(FileComponents)
-	err := c.cc.Invoke(ctx, FileComponentsService_CreateFileComponents_FullMethodName, in, out, opts...)
+func (c *fileComponentsServiceClient) CreateFileComponents(ctx context.Context, in *RepositoryFilePaths, opts ...grpc.CallOption) (FileComponentsService_CreateFileComponentsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &FileComponentsService_ServiceDesc.Streams[0], FileComponentsService_CreateFileComponents_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &fileComponentsServiceCreateFileComponentsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type FileComponentsService_CreateFileComponentsClient interface {
+	Recv() (*FileComponent, error)
+	grpc.ClientStream
+}
+
+type fileComponentsServiceCreateFileComponentsClient struct {
+	grpc.ClientStream
+}
+
+func (x *fileComponentsServiceCreateFileComponentsClient) Recv() (*FileComponent, error) {
+	m := new(FileComponent)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 func (c *fileComponentsServiceClient) GetFileComponents(ctx context.Context, in *FileComponentIds, opts ...grpc.CallOption) (*FileComponents, error) {
@@ -84,7 +107,7 @@ func (c *fileComponentsServiceClient) DeleteFileComponentsByRepositoryIdAndFileP
 // All implementations must embed UnimplementedFileComponentsServiceServer
 // for forward compatibility
 type FileComponentsServiceServer interface {
-	CreateFileComponents(context.Context, *RepositoryFilePaths) (*FileComponents, error)
+	CreateFileComponents(*RepositoryFilePaths, FileComponentsService_CreateFileComponentsServer) error
 	GetFileComponents(context.Context, *FileComponentIds) (*FileComponents, error)
 	DeleteFileComponentsByRepositoryId(context.Context, *DeleteFileComponentsByRepositoryIdRequest) (*emptypb.Empty, error)
 	DeleteFileComponentsByRepositoryIdAndFilePaths(context.Context, *DeleteFileComponentsByRepositoryIdAndFilePathsRequest) (*FileComponentIds, error)
@@ -95,8 +118,8 @@ type FileComponentsServiceServer interface {
 type UnimplementedFileComponentsServiceServer struct {
 }
 
-func (UnimplementedFileComponentsServiceServer) CreateFileComponents(context.Context, *RepositoryFilePaths) (*FileComponents, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateFileComponents not implemented")
+func (UnimplementedFileComponentsServiceServer) CreateFileComponents(*RepositoryFilePaths, FileComponentsService_CreateFileComponentsServer) error {
+	return status.Errorf(codes.Unimplemented, "method CreateFileComponents not implemented")
 }
 func (UnimplementedFileComponentsServiceServer) GetFileComponents(context.Context, *FileComponentIds) (*FileComponents, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFileComponents not implemented")
@@ -120,22 +143,25 @@ func RegisterFileComponentsServiceServer(s grpc.ServiceRegistrar, srv FileCompon
 	s.RegisterService(&FileComponentsService_ServiceDesc, srv)
 }
 
-func _FileComponentsService_CreateFileComponents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RepositoryFilePaths)
-	if err := dec(in); err != nil {
-		return nil, err
+func _FileComponentsService_CreateFileComponents_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(RepositoryFilePaths)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	if interceptor == nil {
-		return srv.(FileComponentsServiceServer).CreateFileComponents(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: FileComponentsService_CreateFileComponents_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FileComponentsServiceServer).CreateFileComponents(ctx, req.(*RepositoryFilePaths))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(FileComponentsServiceServer).CreateFileComponents(m, &fileComponentsServiceCreateFileComponentsServer{stream})
+}
+
+type FileComponentsService_CreateFileComponentsServer interface {
+	Send(*FileComponent) error
+	grpc.ServerStream
+}
+
+type fileComponentsServiceCreateFileComponentsServer struct {
+	grpc.ServerStream
+}
+
+func (x *fileComponentsServiceCreateFileComponentsServer) Send(m *FileComponent) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 func _FileComponentsService_GetFileComponents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -200,10 +226,6 @@ var FileComponentsService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*FileComponentsServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CreateFileComponents",
-			Handler:    _FileComponentsService_CreateFileComponents_Handler,
-		},
-		{
 			MethodName: "GetFileComponents",
 			Handler:    _FileComponentsService_GetFileComponents_Handler,
 		},
@@ -216,6 +238,12 @@ var FileComponentsService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _FileComponentsService_DeleteFileComponentsByRepositoryIdAndFilePaths_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "CreateFileComponents",
+			Handler:       _FileComponentsService_CreateFileComponents_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "file_components_service.proto",
 }

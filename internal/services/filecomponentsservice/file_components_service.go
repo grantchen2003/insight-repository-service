@@ -25,21 +25,27 @@ func CreateFileComponents(repositoryId string, filePaths []string) ([]FileCompon
 
 	conn, err := grpc.Dial(os.Getenv("FILE_COMPONENTS_SERVICE_ADDRESS"), grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("error connecting to file components service: %v", err)
-		return nil, err
+		panic(err)
 	}
 	defer conn.Close()
 
 	client := pb.NewFileComponentsServiceClient(conn)
 	request := &pb.RepositoryFilePaths{RepositoryId: repositoryId, FilePaths: filePaths}
 
-	resp, err := client.CreateFileComponents(context.Background(), request)
-
+	stream, err := client.CreateFileComponents(context.Background(), request)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
-	for _, fileComponent := range resp.FileComponents {
+	for {
+		fileComponent, err := stream.Recv()
+		if err != nil {
+			if err.Error() == "EOF" {
+				break
+			}
+			panic(err)
+		}
+
 		fileComponents = append(fileComponents, FileComponent{
 			Id:           int(fileComponent.Id),
 			RepositoryId: fileComponent.RepositoryId,

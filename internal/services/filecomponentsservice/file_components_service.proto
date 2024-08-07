@@ -36,7 +36,7 @@ message DeleteFileComponentsByRepositoryIdAndFilePathsRequest {
 }
 
 service FileComponentsService {
-    rpc CreateFileComponents(RepositoryFilePaths) returns(FileComponents);
+    rpc CreateFileComponents(RepositoryFilePaths) returns(stream FileComponent);
     rpc GetFileComponents(FileComponentIds) returns (FileComponents);
     rpc DeleteFileComponentsByRepositoryId(DeleteFileComponentsByRepositoryIdRequest) returns (google.protobuf.Empty);
     rpc DeleteFileComponentsByRepositoryIdAndFilePaths(DeleteFileComponentsByRepositoryIdAndFilePathsRequest) returns (FileComponentIds);
