@@ -49,20 +49,20 @@ func addFiles(repositoryId string, fileChunks []fileChunksService.FileChunk) err
 
 	fileChunkSaveStatuses, err := fileChunksService.CreateFileChunks(repositoryId, fileChunks)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	filePathsToProcess := getFilePathsToProcess(fileChunkSaveStatuses)
 
 	fileComponents, err := fileComponentService.CreateFileComponents(repositoryId, filePathsToProcess)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	fileComponentIds := getFileComponentIds(fileComponents)
 
 	if _, err := vectorEmbedderService.CreateFileComponentVectorEmbeddings(fileComponentIds); err != nil {
-		return err
+		panic(err)
 	}
 
 	return nil

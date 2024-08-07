@@ -107,6 +107,10 @@ func deleteFiles(repositoryId string, filePaths []string) error {
 }
 
 func updateFiles(repositoryId string, fileChunks []fileChunksService.FileChunk) error {
+	if len(fileChunks) == 0 {
+		return nil
+	}
+
 	var filePaths []string
 	for _, fileChunk := range fileChunks {
 		filePaths = append(filePaths, fileChunk.FilePath)
